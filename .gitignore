@@ -1,0 +1,9 @@
+# Paths
+
+node_modules/
+uploads/*
+
+# Enviroments
+
+*.env*
+!.env.example
