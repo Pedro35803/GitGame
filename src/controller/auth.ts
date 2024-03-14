@@ -13,8 +13,11 @@ export const register = async (req: Request, res: Response) => {
     ...req.body,
     password: hashPassword,
   };
-  const user: User = await db.user.create({ data });
-  res.status(201).json({ ...user, password: undefined });
+  const user: Partial<User> = await db.user.create({
+    data,
+    select: { password: false },
+  });
+  res.status(201).json(user);
 };
 
 export const login = async (req: Request, res: Response) => {
