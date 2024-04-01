@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
+import { Privilegies, User } from "@prisma/client";
 
 const select = {
   id_user: true,
@@ -10,6 +11,36 @@ const select = {
       name: true,
     },
   },
+};
+
+export const handleAccess = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id_user } = req.params;
+  const { userId, method } = req;
+
+  const objError = {
+    status: 401,
+    message: "Access denied. Protecting user privacy.",
+  };
+
+  if (userId === id_user) return next();
+
+  const admin = await db.admin.findUnique({
+    where: { id_user: userId },
+    select: { id_user: true, Privilegies: true },
+  });
+
+  if (!admin) throw objError;
+  const privilegies: Privilegies = admin.Privilegies;
+
+  if (!privilegies.canManageCRUDPlayer) throw objError;
+  if (method === "GET" && !id_user && !privilegies.canManageCRUDPlayer)
+    throw objError;
+
+  next();
 };
 
 export const create = async (req: Request, res: Response) => {
@@ -30,8 +61,9 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const { id_user } = req.params;
-  const user = await db.player.findMany({ select, where: { id_user } });
+  // const userQuery: User = req.query as Partial<User>
+  const user = await db.player.findMany({ select });
+  // const user = await db.player.findMany({ select, where: { ...userQuery } });
   res.json(user);
 };
 

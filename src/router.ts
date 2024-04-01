@@ -23,13 +23,13 @@ router
 router
   .route("/player")
   .post(player.create)
-  .get(authorization, verifyPermission, player.getAll);
+  .get(authorization, player.handleAccess, player.getAll);
 
 router
   .route("/player/:id_user")
-  .get(authorization, player.getById)
-  .patch(authorization, player.update)
-  .delete(authorization, player.destroy);
+  .get(authorization, player.handleAccess, player.getById)
+  .patch(authorization, player.handleAccess, player.update)
+  .delete(authorization, player.handleAccess, player.destroy);
 
 router
   .route("/admin")
