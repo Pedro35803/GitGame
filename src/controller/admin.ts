@@ -75,8 +75,13 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const update = async (req: Request, res: Response) => {
-  const id_user = req.userId;
+  const privilegies: Privilegies = req.privilegies;
+  const { id_user } = req.params;
+  const userId = req.userId;
   const where = { id_user };
+
+  if (userId !== id_user && !privilegies.canEditPrivilegiesAdmin)
+    throw { status: 401, message: "Access denied. Protecting user privacy." };
 
   await db.admin.findUniqueOrThrow({ where });
   const { second_password } = req.body;
@@ -87,7 +92,20 @@ export const update = async (req: Request, res: Response) => {
       : undefined,
   };
 
-  const user = await db.admin.update({ data: update, where, select });
+  const updatePrivilegies = req.body;
+  delete updatePrivilegies["second_password"];
+  delete updatePrivilegies["id_user"];
+
+  const user = await db.admin.update({
+    data: {
+      ...update,
+      Privilegies: {
+        update: updatePrivilegies,
+      },
+    },
+    where,
+    select,
+  });
   res.status(203).json(user);
 };
 

@@ -4,6 +4,7 @@ import * as auth from "./controller/auth";
 import * as user from "./controller/user";
 import * as admin from "./controller/admin";
 import * as player from "./controller/player";
+import * as privilegies from "./controller/privilegies";
 
 import authorization from "./middleware/isAuttenticate";
 import { verifyPermission } from "./middleware/verifyPermission";
