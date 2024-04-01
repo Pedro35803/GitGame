@@ -2,20 +2,13 @@ import express from "express";
 
 import * as auth from "./controller/auth";
 import * as user from "./controller/user";
+import * as admin from "./controller/admin";
 import * as player from "./controller/player";
+
 import authorization from "./middleware/isAuttenticate";
-import { verifyPermision } from "./middleware/verifyPermision";
+import { verifyPermission } from "./middleware/verifyPermission";
 
 export const router = express.Router();
-
-const generateRouter = (path) => {
-  const pathID = `/${path}/:id`;
-  router.post(path, player.create).get(path, player.getAll);
-  router
-    .get(pathID, player.getById)
-    .patch(pathID, player.update)
-    .delete(pathID, player.destroy);
-};
 
 router.post("/register", auth.register);
 router.post("/login", auth.login);
@@ -27,10 +20,23 @@ router
   .delete(authorization, user.destroy);
 
 router
-  .post("/player", player.create)
-  .get("/player", authorization, verifyPermision, player.getAll);
+  .route("/player")
+  .post(player.create)
+  .get(authorization, verifyPermission, player.getAll);
 
 router
-  .get("/player/:id_user", authorization, player.getById)
-  .patch("/player/:id_user", authorization, player.update)
-  .delete("/player/:id_user", authorization, player.destroy);
+  .route("/player/:id_user")
+  .get(authorization, player.getById)
+  .patch(authorization, player.update)
+  .delete(authorization, player.destroy);
+
+router
+  .route("/admin")
+  .post(authorization, verifyPermission, admin.create)
+  .get(authorization, verifyPermission, admin.getAll);
+
+router
+  .route("/admin/:id_user")
+  .get(authorization, verifyPermission, admin.getById)
+  .patch(authorization, verifyPermission, admin.update)
+  .delete(authorization, verifyPermission, admin.destroy);

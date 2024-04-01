@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id       String  @id(map: "pk_user") @default(uuid())
-  email    String  @db.VarChar(255) @unique
+  email    String  @unique @db.VarChar(255)
   password String  @db.VarChar(255)
   name     String? @db.VarChar(50)
   Admin    Admin?
@@ -19,9 +19,10 @@ model User {
 }
 
 model Admin {
-  id_user         String @id(map: "pk_admin")
-  second_password String @db.VarChar(255)
-  user            User   @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
+  id_user         String       @id(map: "pk_admin")
+  second_password String       @db.VarChar(255)
+  user            User         @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
+  Privilegies     Privilegies?
 
   @@index([id_user], map: "index_admin")
 }
@@ -34,6 +35,19 @@ model Player {
   PlayerProgress           PlayerProgress[]
 
   @@index([id_user], map: "index_player")
+}
+
+model Privilegies {
+  id                      String  @id(map: "pk_privilegies") @default(uuid())
+  id_admin                String  @unique
+  canCreateAdmin          Boolean @default(false)
+  canDeleteAdmin          Boolean @default(false)
+  canViewAllAdmin         Boolean @default(false)
+  canEditPrivilegiesAdmin Boolean @default(false)
+  canManageCRUDPlayer     Boolean @default(false)
+  canManageCRUDReports    Boolean @default(true)
+  canManageContentGame    Boolean @default(true)
+  admin                   Admin   @relation(fields: [id_admin], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_privilegies_admin")
 }
 
 model Reports {

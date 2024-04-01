@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../env";
+import { db } from "../db";
 
-export const authorization = (
+export const authorization = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -18,9 +19,8 @@ export const authorization = (
   const decoded = jwt.verify(token, JWT_SECRET);
   if (!decoded) throw { status: 401, message: "Unauthorized access" };
 
-  req.userId = decoded;
+  req.userId = decoded as string;
   next();
 };
-
 
 export default authorization;

@@ -13,16 +13,13 @@ export const register = async (req: Request, res: Response) => {
     ...req.body,
     password: hashPassword,
   };
-  const user: Partial<User> = await db.user.create({
-    data,
-    select: { password: false },
-  });
-  res.status(201).json(user);
+  const user: Partial<User> = await db.user.create({ data });
+  res.status(201).json({ ...user, password: undefined });
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const objError = { status: 401, message: "user or password incorrect" };
+  const objError = { status: 401, message: "email or password incorrect" };
 
   const user: User = await db.user.findUnique({ where: { email } });
   if (!user) throw objError;
