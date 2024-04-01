@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../env";
-import { db } from "../db";
 
 export const authorization = async (
   req: Request,
