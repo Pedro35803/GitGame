@@ -53,7 +53,7 @@ model Privilegies {
 model Reports {
   id        String  @id(map: "pk_report") @default(uuid())
   id_player String
-  texto     String
+  text      String
   resolved  Boolean @default(false)
   player    Player  @relation(fields: [id_player], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_report_player")
 
@@ -87,7 +87,7 @@ model Assessment {
 model objective {
   id                     String          @id(map: "pk_objective") @default(uuid())
   id_assessment_activity String
-  tipo                   TypeIdObjective
+  type                   TypeIdObjective
   resolution             String
   objective              String
   assessement            Assessment      @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_assessment")
@@ -150,7 +150,7 @@ model CapterProgress {
   id                  String               @id(map: "pk_capterProgress") @default(uuid())
   id_player_progress  String
   id_assessment_level String
-  tipo                TypeIdProgressCapter
+  type                TypeIdProgressCapter
   completed           Boolean              @default(false)
   player_progress     PlayerProgress       @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
   assessment          Assessment           @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_assessment")
@@ -164,7 +164,7 @@ model LevelProgress {
   id                  String              @id(map: "pk_levelProgress") @default(uuid())
   id_subject_activity String
   id_capter_progress  String
-  tipo                TypeIdProgressLevel
+  type                TypeIdProgressLevel
   completed           Boolean             @default(false)
   capter_progress     CapterProgress      @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
   activity            Activity            @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_activity")

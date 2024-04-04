@@ -4,7 +4,7 @@ import * as auth from "./controller/auth";
 import * as user from "./controller/user";
 import * as admin from "./controller/admin";
 import * as player from "./controller/player";
-import * as privilegies from "./controller/privilegies";
+import * as reports from "./controller/reports";
 
 import authorization from "./middleware/isAuttenticate";
 import { verifyPermission } from "./middleware/verifyPermission";
@@ -41,3 +41,19 @@ router
   .get(authorization, verifyPermission, admin.getById)
   .patch(authorization, verifyPermission, admin.update)
   .delete(authorization, verifyPermission, admin.destroy);
+
+router
+  .route("/reports")
+  .post(authorization, reports.create)
+  .get(authorization, verifyPermission, reports.handleAccess, reports.getAll);
+
+router
+  .route("/reports/:id")
+  .get(authorization, verifyPermission, reports.handleAccess, reports.getById)
+  .patch(authorization, verifyPermission, reports.handleAccess, reports.update)
+  .delete(
+    authorization,
+    verifyPermission,
+    reports.handleAccess,
+    reports.destroy
+  );
