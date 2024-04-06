@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../db";
-import { Privilegies, User } from "@prisma/client";
+import { Player, Privilegies, User } from "@prisma/client";
 
 const select = {
   id_user: true,
@@ -61,9 +61,12 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  // const userQuery: User = req.query as Partial<User>
-  const user = await db.player.findMany({ select });
-  // const user = await db.player.findMany({ select, where: { ...userQuery } });
+  const { complete_game_percentage: percent } = req.query;
+  const filter: Partial<Player> = {
+    ...req.query,
+    complete_game_percentage: percent && Number(percent),
+  };
+  const user = await db.player.findMany({ select, where: filter });
   res.json(user);
 };
 

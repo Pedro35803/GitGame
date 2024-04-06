@@ -19,10 +19,6 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const user = await db.player.findFirst({
-    where: { id_user: req.body.id_player },
-  });
-  console.log(user);
   const reports = await db.reports.create({ data: req.body });
   res.status(201).json(reports);
 };
@@ -34,7 +30,13 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const reports = await db.reports.findMany();
+  const { resolved } = req.query;
+  const filter = {
+    ...req.query,
+    text: undefined,
+    resolved: resolved && (resolved === "false" ? false : true),
+  };
+  const reports = await db.reports.findMany({ where: filter });
   res.json(reports);
 };
 

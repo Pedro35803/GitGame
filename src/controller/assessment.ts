@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies } from "@prisma/client";
+import { Assessment, Privilegies } from "@prisma/client";
 import { db } from "../db";
 
 export const handleAccess = async (
@@ -30,7 +30,11 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const assessment = await db.assessment.findMany();
+  const filter: Partial<Assessment> = {
+    ...req.query,
+    description: undefined,
+  };
+  const assessment = await db.assessment.findMany({ where: filter });
   res.json(assessment);
 };
 

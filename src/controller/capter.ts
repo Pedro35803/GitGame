@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies } from "@prisma/client";
+import { Capter, Privilegies } from "@prisma/client";
 import { db } from "../db";
 
 export const handleAccess = async (
@@ -30,7 +30,12 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const capter = await db.capter.findMany();
+  const { numberOrder } = req.query
+  const filter: Partial<Capter> = {
+    ...req.query,
+    numberOrder: numberOrder && Number(numberOrder)
+  };
+  const capter = await db.capter.findMany({ where: filter });
   res.json(capter);
 };
 

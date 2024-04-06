@@ -50,11 +50,7 @@ export const getAll = async (req: Request, res: Response) => {
   if (userId !== id_user && !privilegies.canViewAllAdmin)
     throw { status: 401, message: "Access denied. Protecting user privacy." };
 
-  const user = await db.admin.findMany({
-    where: { id_user },
-    select,
-  });
-
+  const user = await db.admin.findMany({ select });
   res.json(user);
 };
 
