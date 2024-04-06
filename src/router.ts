@@ -5,6 +5,8 @@ import * as user from "./controller/user";
 import * as admin from "./controller/admin";
 import * as player from "./controller/player";
 import * as reports from "./controller/reports";
+import * as capter from "./controller/capter";
+import * as level from "./controller/level";
 
 import authorization from "./middleware/isAuttenticate";
 import { verifyPermission } from "./middleware/verifyPermission";
@@ -57,3 +59,25 @@ router
     reports.handleAccess,
     reports.destroy
   );
+
+router
+  .route("/capter")
+  .post(authorization, verifyPermission, capter.handleAccess, capter.create)
+  .get(authorization, capter.getAll);
+
+router
+  .route("/capter/:id")
+  .get(authorization, capter.getById)
+  .patch(authorization, verifyPermission, capter.handleAccess, capter.update)
+  .delete(authorization, verifyPermission, capter.handleAccess, capter.destroy);
+
+router
+  .route("/level")
+  .post(authorization, verifyPermission, level.handleAccess, level.create)
+  .get(authorization, level.getAll);
+
+router
+  .route("/level/:id")
+  .get(authorization, level.getById)
+  .patch(authorization, verifyPermission, level.handleAccess, level.update)
+  .delete(authorization, verifyPermission, level.handleAccess, level.destroy);
