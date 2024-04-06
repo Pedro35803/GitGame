@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --transpile-only src/index.ts",
+    "db": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
     "test": "jest"
   },
   "keywords": [],

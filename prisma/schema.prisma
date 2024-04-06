@@ -62,9 +62,8 @@ model Reports {
 
 model Capter {
   id             String           @id(map: "pk_capter") @default(uuid())
-  id_assessment  String
   title          String           @db.VarChar(50)
-  number         Int
+  numberOrder    Int              @unique @default(autoincrement())
   PlayerProgress PlayerProgress[]
   Assessment     Assessment?
   Level          Level[]
@@ -102,7 +101,7 @@ model Level {
   id             String           @id(map: "pk_level") @default(uuid())
   id_capter      String
   title          String           @db.VarChar(50)
-  number         Int
+  numberOrder    Int              @unique @default(autoincrement())
   capter         Capter           @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_level_capter")
   Activity       Activity[]
   CapterProgress CapterProgress[]
