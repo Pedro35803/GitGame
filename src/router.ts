@@ -7,6 +7,7 @@ import * as player from "./controller/player";
 import * as reports from "./controller/reports";
 import * as capter from "./controller/capter";
 import * as level from "./controller/level";
+import * as assessment from "./controller/assessment";
 
 import authorization from "./middleware/isAuttenticate";
 import { verifyPermission } from "./middleware/verifyPermission";
@@ -81,3 +82,29 @@ router
   .get(authorization, level.getById)
   .patch(authorization, verifyPermission, level.handleAccess, level.update)
   .delete(authorization, verifyPermission, level.handleAccess, level.destroy);
+
+router
+  .route("/assessment")
+  .post(
+    authorization,
+    verifyPermission,
+    assessment.handleAccess,
+    assessment.create
+  )
+  .get(authorization, assessment.getAll);
+
+router
+  .route("/assessment/:id")
+  .get(authorization, assessment.getById)
+  .patch(
+    authorization,
+    verifyPermission,
+    assessment.handleAccess,
+    assessment.update
+  )
+  .delete(
+    authorization,
+    verifyPermission,
+    assessment.handleAccess,
+    assessment.destroy
+  );
