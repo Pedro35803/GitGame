@@ -77,24 +77,27 @@ model Assessment {
   title          String           @db.VarChar(50)
   description    String
   capter         Capter           @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_assessment_capter")
-  objective      objective[]
+  objective      Objective?
   CapterProgress CapterProgress[]
 
   @@index([id], map: "index_assessment")
 }
 
-model objective {
+model Objective {
   id                     String          @id(map: "pk_objective") @default(uuid())
-  id_assessment_activity String
-  type                   TypeIdObjective
   resolution             String
   objective              String
-  assessement            Assessment      @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_assessment")
-  activity               Activity        @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_activity")
-  Subject                Subject?        @relation(fields: [subjectId], references: [id])
-  subjectId              String?
+  
 
   @@index([id], map: "index_objective")
+}
+
+model ObjectiveAssessmentActivity {
+  id                     String          @id(map: "pk_objectiveAssessmentActivity") @default(uuid())
+  id_assessment String
+  id_assessment String
+  assessement            Assessment     @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_assessment")
+  activity               Activity?       @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_activity")
 }
 
 model Level {
@@ -115,7 +118,7 @@ model Activity {
   id_level      String
   title         String          @db.VarChar(50)
   level         Level           @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_activity_level")
-  objective     objective[]
+  objective     Objective[]
   LevelProgress LevelProgress[]
 
   @@index([id], map: "index_activity")
@@ -127,7 +130,6 @@ model Subject {
   title         String          @db.VarChar(50)
   text          String
   level         Level           @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_level")
-  objective     objective[]
   LevelProgress LevelProgress[]
 
   @@index([id], map: "index_subject")
@@ -152,8 +154,8 @@ model CapterProgress {
   type                TypeIdProgressCapter
   completed           Boolean              @default(false)
   player_progress     PlayerProgress       @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
-  assessment          Assessment           @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_assessment")
-  level               Level                @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
+  assessment          Assessment?          @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_assessment")
+  level               Level?               @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
   LevelProgress       LevelProgress[]
 
   @@index([id], map: "index_capterProgress")
@@ -166,8 +168,8 @@ model LevelProgress {
   type                TypeIdProgressLevel
   completed           Boolean             @default(false)
   capter_progress     CapterProgress      @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
-  activity            Activity            @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_activity")
-  subject             Subject             @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_subject")
+  activity            Activity?           @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_activity")
+  subject             Subject?            @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_subject")
 
   @@index([id], map: "index_levelProgress")
 }
