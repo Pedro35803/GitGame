@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { db } from "../db";
+import { db } from "../../db";
 
 const select = {
   id_user: true,

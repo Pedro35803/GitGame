@@ -1,12 +1,12 @@
 import express from "express";
 
-import * as objective from "../controller/objective";
-import * as activity from "../controller/activity";
-import * as reports from "../controller/reports";
-import * as subject from "../controller/subject";
-import * as capter from "../controller/capter";
-import * as level from "../controller/level";
-import * as exam from "../controller/exam";
+import * as objective from "../controller/game/objective";
+import * as activity from "../controller/game/activity";
+import * as reports from "../controller/game/reports";
+import * as subject from "../controller/game/subject";
+import * as capter from "../controller/game/capter";
+import * as level from "../controller/game/level";
+import * as exam from "../controller/game/exam";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";

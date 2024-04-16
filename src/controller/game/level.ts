@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies, Objective } from "@prisma/client";
-import { db } from "../db";
+import { Level, Privilegies } from "@prisma/client";
+import { db } from "../../db";
 
 export const handleAccess = async (
   req: Request,
@@ -11,7 +11,7 @@ export const handleAccess = async (
 
   const objError = {
     status: 401,
-    message: "Access denied. Protecting objective privacy.",
+    message: "Access denied. Protecting level privacy.",
   };
 
   if (!privilegies.canManageContentGame) throw objError;
@@ -19,38 +19,38 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const objective = await db.objective.create({ data: req.body });
-  res.status(201).json(objective);
+  const level = await db.level.create({ data: req.body });
+  res.status(201).json(level);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const objective = await db.objective.findUniqueOrThrow({ where: { id } });
-  res.json(objective);
+  const level = await db.level.findUniqueOrThrow({ where: { id } });
+  res.json(level);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const filter: Partial<Objective> = {
+  const { numberOrder } = req.query;
+  const filter: Partial<Level> = {
     ...req.query,
-    resolution: undefined,
-    objective: undefined
+    numberOrder: numberOrder && Number(numberOrder),
   };
-  const objective = await db.objective.findMany({ where: filter });
-  res.json(objective);
+  const level = await db.level.findMany({ where: filter });
+  res.json(level);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id };
 
-  await db.objective.findUniqueOrThrow({ where });
+  await db.level.findUniqueOrThrow({ where });
 
-  const objective = await db.objective.update({ data: req.body, where });
-  res.status(203).json(objective);
+  const level = await db.level.update({ data: req.body, where });
+  res.status(203).json(level);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const objective = await db.objective.delete({ where: { id } });
-  res.status(204).json(objective);
+  const level = await db.level.delete({ where: { id } });
+  res.status(204).json(level);
 };

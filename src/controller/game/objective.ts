@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { Capter, Privilegies } from "@prisma/client";
-import { db } from "../db";
+import { Privilegies, Objective } from "@prisma/client";
+import { db } from "../../db";
 
 export const handleAccess = async (
   req: Request,
@@ -11,7 +11,7 @@ export const handleAccess = async (
 
   const objError = {
     status: 401,
-    message: "Access denied. Protecting capter privacy.",
+    message: "Access denied. Protecting objective privacy.",
   };
 
   if (!privilegies.canManageContentGame) throw objError;
@@ -19,38 +19,38 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const capter = await db.capter.create({ data: req.body });
-  res.status(201).json(capter);
+  const objective = await db.objective.create({ data: req.body });
+  res.status(201).json(objective);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const capter = await db.capter.findUniqueOrThrow({ where: { id } });
-  res.json(capter);
+  const objective = await db.objective.findUniqueOrThrow({ where: { id } });
+  res.json(objective);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const { numberOrder } = req.query
-  const filter: Partial<Capter> = {
+  const filter: Partial<Objective> = {
     ...req.query,
-    numberOrder: numberOrder && Number(numberOrder)
+    resolution: undefined,
+    objective: undefined,
   };
-  const capter = await db.capter.findMany({ where: filter });
-  res.json(capter);
+  const objective = await db.objective.findMany({ where: filter });
+  res.json(objective);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id };
 
-  await db.capter.findUniqueOrThrow({ where });
+  await db.objective.findUniqueOrThrow({ where });
 
-  const capter = await db.capter.update({ data: req.body, where });
-  res.status(203).json(capter);
+  const objective = await db.objective.update({ data: req.body, where });
+  res.status(203).json(objective);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const capter = await db.capter.delete({ where: { id } });
-  res.status(204).json(capter);
+  const objective = await db.objective.delete({ where: { id } });
+  res.status(204).json(objective);
 };

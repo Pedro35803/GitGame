@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { db } from "../db";
+import { db } from "../../db";
 import { Player, Privilegies, User } from "@prisma/client";
 
 const select = {

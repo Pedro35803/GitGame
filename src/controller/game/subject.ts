@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { Level, Privilegies } from "@prisma/client";
-import { db } from "../db";
+import { Privilegies, Subject } from "@prisma/client";
+import { db } from "../../db";
 
 export const handleAccess = async (
   req: Request,
@@ -11,7 +11,7 @@ export const handleAccess = async (
 
   const objError = {
     status: 401,
-    message: "Access denied. Protecting level privacy.",
+    message: "Access denied. Protecting subject privacy.",
   };
 
   if (!privilegies.canManageContentGame) throw objError;
@@ -19,38 +19,37 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const level = await db.level.create({ data: req.body });
-  res.status(201).json(level);
+  const subject = await db.subject.create({ data: req.body });
+  res.status(201).json(subject);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const level = await db.level.findUniqueOrThrow({ where: { id } });
-  res.json(level);
+  const subject = await db.subject.findUniqueOrThrow({ where: { id } });
+  res.json(subject);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const { numberOrder } = req.query
-  const filter: Partial<Level> = {
+  const filter: Partial<Subject> = {
     ...req.query,
-    numberOrder: numberOrder && Number(numberOrder)
+    text: undefined,
   };
-  const level = await db.level.findMany({ where: filter });
-  res.json(level);
+  const subject = await db.subject.findMany({ where: filter });
+  res.json(subject);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id };
 
-  await db.level.findUniqueOrThrow({ where });
+  await db.subject.findUniqueOrThrow({ where });
 
-  const level = await db.level.update({ data: req.body, where });
-  res.status(203).json(level);
+  const subject = await db.subject.update({ data: req.body, where });
+  res.status(203).json(subject);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const level = await db.level.delete({ where: { id } });
-  res.status(204).json(level);
+  const subject = await db.subject.delete({ where: { id } });
+  res.status(204).json(subject);
 };

@@ -1,9 +1,9 @@
 import express from "express";
 
-import * as auth from "../controller/auth";
-import * as user from "../controller/user";
-import * as admin from "../controller/admin";
-import * as player from "../controller/player";
+import * as auth from "../controller/auth/auth";
+import * as user from "../controller/auth/user";
+import * as admin from "../controller/auth/admin";
+import * as player from "../controller/auth/player";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";

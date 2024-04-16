@@ -3,8 +3,8 @@ import { User } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-import { JWT_SECRET } from "../env";
-import { db } from "../db";
+import { JWT_SECRET } from "../../env";
+import { db } from "../../db";
 
 export const register = async (req: Request, res: Response) => {
   const { password } = req.body;

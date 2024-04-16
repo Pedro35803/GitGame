@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
-import { db } from "../db";
+import { db } from "../../db";
 
 export const handleAccess = async (
   req: Request,
