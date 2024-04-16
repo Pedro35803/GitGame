@@ -1,12 +1,12 @@
 import express from "express";
 
-import * as assessment from "../controller/assessment";
 import * as objective from "../controller/objective";
 import * as activity from "../controller/activity";
 import * as reports from "../controller/reports";
 import * as subject from "../controller/subject";
 import * as capter from "../controller/capter";
 import * as level from "../controller/level";
+import * as exam from "../controller/exam";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
@@ -57,9 +57,9 @@ router
     reports.destroy
   );
 
-generateRoutersGame("/assessment", assessment);
 generateRoutersGame("/objective", objective);
 generateRoutersGame("/activity", activity);
 generateRoutersGame("/subject", subject);
 generateRoutersGame("/capter", capter);
 generateRoutersGame("/level", level);
+generateRoutersGame("/exam", exam);

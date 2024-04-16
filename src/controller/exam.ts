@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies } from "@prisma/client";
+import { Exam, Privilegies } from "@prisma/client";
 import { db } from "../db";
 
 const select = {
   id_assessment: true,
-  id_orderLevel: true,
+  description: true,
   assessment: true,
-  orderLevel: true,
+  id_capter: true,
 };
 
 export const handleAccess = async (
@@ -18,7 +18,7 @@ export const handleAccess = async (
 
   const objError = {
     status: 401,
-    message: "Access denied. Protecting activity privacy.",
+    message: "Access denied. Protecting exam privacy.",
   };
 
   if (!privilegies.canManageContentGame) throw objError;
@@ -26,51 +26,52 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const { id_level, title, order } = req.body;
-  const orderNumber =
-    order || (await db.orderLevel.count({ where: { id_level } }) + 1);
-
-  const activity = await db.activity.create({
+  const { title, description, id_capter } = req.body;
+  const exam = await db.exam.create({
+    select,
     data: {
+      description,
       assessment: {
         create: { title },
       },
-      orderLevel: {
-        create: { id_level, order: orderNumber },
+      capter: {
+        connect: { id: id_capter },
       },
     },
-    select,
   });
-
-  res.status(201).json(activity);
+  res.status(201).json(exam);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const activity = await db.activity.findUniqueOrThrow({
+  const exam = await db.exam.findUniqueOrThrow({
     where: { id_assessment: id },
     select,
   });
-  res.json(activity);
+  res.json(exam);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const activity = await db.activity.findMany({ where: req.query, select });
-  res.json(activity);
+  const filter: Partial<Exam> = {
+    ...req.query,
+    description: undefined,
+  };
+  const exam = await db.exam.findMany({ where: filter, select });
+  res.json(exam);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id_assessment: id };
 
-  await db.activity.findUniqueOrThrow({ where });
+  await db.exam.findUniqueOrThrow({ where });
 
-  const activity = await db.activity.update({ data: req.body, where, select });
-  res.status(203).json(activity);
+  const exam = await db.exam.update({ data: req.body, where, select });
+  res.status(203).json(exam);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const activity = await db.activity.delete({ where: { id_assessment: id } });
-  res.status(204).json(activity);
+  const exam = await db.exam.delete({ where: { id_assessment: id }, select });
+  res.status(204).json(exam);
 };
