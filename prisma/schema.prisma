@@ -47,6 +47,7 @@ model Privilegies {
   canManageCRUDPlayer     Boolean @default(false)
   canManageCRUDReports    Boolean @default(true)
   canManageContentGame    Boolean @default(true)
+  canReorderContentGame   Boolean @default(true)
   admin                   Admin   @relation(fields: [id_admin], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_privilegies_admin")
 }
 
@@ -65,126 +66,130 @@ model Capter {
   title          String           @db.VarChar(50)
   numberOrder    Int              @unique @default(autoincrement())
   PlayerProgress PlayerProgress[]
-  Assessment     Assessment?
+  Exam           Exam?
   Level          Level[]
 
   @@index([id], map: "index_capter")
 }
 
-model Assessment {
-  id             String           @id(map: "pk_assessment") @default(uuid())
-  id_capter      String           @unique
-  title          String           @db.VarChar(50)
-  description    String
-  capter         Capter           @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_assessment_capter")
-  objective      Objective?
-  CapterProgress CapterProgress[]
+model Assessement {
+  id          String      @id(map: "pk_assessment") @default(uuid())
+  title       String      @db.VarChar(50)
+  objective   Objective[]
+  Exam        Exam[]
+  Activity    Activity[]
+}
 
-  @@index([id], map: "index_assessment")
+model Exam {
+  id_assessment String @id(map: "pk_exam")
+  id_capter     String @unique
+  description   String
+
+  capter     Capter      @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_exam_capter")
+  assessment Assessement @relation(fields: [id_assessment], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_exam_assessment")
+
+  @@index([id_assessment], map: "index_exam")
+}
+
+model Activity {
+  id_assessment String @id(map: "pk_activity")
+  id_orderLevel String
+
+  assessment Assessement @relation(fields: [id_assessment], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_activity_assessment")
+  orderLevel OrderLevel  @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
+
+  @@index([id_assessment], map: "index_activity")
 }
 
 model Objective {
-  id                     String          @id(map: "pk_objective") @default(uuid())
-  resolution             String
-  objective              String
-  
+  id            String @id(map: "pk_objective") @default(uuid())
+  id_assessment String
+  resolution    String
+  objective     String
+
+  assessement Assessement @relation(fields: [id_assessment], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_assessment")
 
   @@index([id], map: "index_objective")
 }
 
-model ObjectiveAssessmentActivity {
-  id                     String          @id(map: "pk_objectiveAssessmentActivity") @default(uuid())
-  id_assessment String
-  id_assessment String
-  assessement            Assessment     @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_assessment")
-  activity               Activity?       @relation(fields: [id_assessment_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_objective_activity")
-}
-
 model Level {
-  id             String           @id(map: "pk_level") @default(uuid())
-  id_capter      String
-  title          String           @db.VarChar(50)
-  numberOrder    Int              @unique @default(autoincrement())
-  capter         Capter           @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_level_capter")
-  Activity       Activity[]
-  CapterProgress CapterProgress[]
-  Subject        Subject[]
+  id          String @id(map: "pk_level") @default(uuid())
+  id_capter   String
+  title       String @db.VarChar(50)
+  numberOrder Int
 
+  capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_level_capter")
+
+  CapterProgress CapterProgress[]
+  OrderLevel     OrderLevel[]
+
+  @@unique([id_capter, numberOrder])
   @@index([id], map: "index_level")
 }
 
-model Activity {
-  id            String          @id(map: "pk_activity") @default(uuid())
-  id_level      String
-  title         String          @db.VarChar(50)
-  level         Level           @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_activity_level")
-  objective     Objective[]
-  LevelProgress LevelProgress[]
+model OrderLevel {
+  id       String @id(map: "pk_orderLevel") @default(uuid())
+  order    Int
+  id_level String
 
-  @@index([id], map: "index_activity")
+  level Level @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_orderLevel_level")
+
+  LevelProgress LevelProgress[]
+  Activity      Activity[]
+  Subject       Subject[]
+
+  @@unique([id_level, order])
+  @@index([id, id_level], map: "index_orderLevel")
 }
 
 model Subject {
-  id            String          @id(map: "pk_subject") @default(uuid())
-  id_level      String
-  title         String          @db.VarChar(50)
+  id            String @id(map: "pk_subject") @default(uuid())
+  id_orderLevel String
+  title         String @db.VarChar(50)
   text          String
-  level         Level           @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_level")
-  LevelProgress LevelProgress[]
+
+  orderLevel OrderLevel @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@index([id], map: "index_subject")
 }
 
 model PlayerProgress {
-  id             String           @id(map: "pk_playerProgress") @default(uuid())
-  id_capter      String
-  id_player      String
-  completed      Boolean          @default(false)
-  capter         Capter           @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_capter")
-  player         Player           @relation(fields: [id_player], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_player")
+  id            String  @id(map: "pk_playerProgress") @default(uuid())
+  id_capter     String
+  id_player     String
+  completed     Boolean @default(false)
+  exam_complete Boolean @default(false)
+
+  capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_capter")
+  player Player @relation(fields: [id_player], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_player")
+
   CapterProgress CapterProgress[]
 
   @@index([id], map: "index_playerProgress")
 }
 
 model CapterProgress {
-  id                  String               @id(map: "pk_capterProgress") @default(uuid())
-  id_player_progress  String
-  id_assessment_level String
-  type                TypeIdProgressCapter
-  completed           Boolean              @default(false)
-  player_progress     PlayerProgress       @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
-  assessment          Assessment?          @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_assessment")
-  level               Level?               @relation(fields: [id_assessment_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
-  LevelProgress       LevelProgress[]
+  id                 String  @id(map: "pk_capterProgress") @default(uuid())
+  id_player_progress String
+  id_level           String
+  completed          Boolean @default(false)
+
+  player_progress PlayerProgress @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
+  level           Level          @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
+
+  LevelProgress LevelProgress[]
 
   @@index([id], map: "index_capterProgress")
 }
 
 model LevelProgress {
-  id                  String              @id(map: "pk_levelProgress") @default(uuid())
-  id_subject_activity String
-  id_capter_progress  String
-  type                TypeIdProgressLevel
-  completed           Boolean             @default(false)
-  capter_progress     CapterProgress      @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
-  activity            Activity?           @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_activity")
-  subject             Subject?            @relation(fields: [id_subject_activity], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_subject")
+  id                 String  @id(map: "pk_levelProgress") @default(uuid())
+  id_orderLevel      String
+  id_capter_progress String
+  completed          Boolean @default(false)
+
+  capter_progress CapterProgress @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
+  orderLevel      OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@index([id], map: "index_levelProgress")
-}
-
-enum TypeIdObjective {
-  assessment
-  activity
-}
-
-enum TypeIdProgressCapter {
-  assessment
-  level
-}
-
-enum TypeIdProgressLevel {
-  activity
-  subject
 }
