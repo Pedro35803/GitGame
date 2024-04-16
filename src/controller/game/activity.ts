@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import { db } from "../../db";
+import { nextOrderLevel } from "../../services/countOrderLevelRegisters";
 
-const select = {
-  id_assessment: true,
-  id_orderLevel: true,
+const include = {
   assessment: true,
   orderLevel: true,
 };
@@ -27,8 +26,7 @@ export const handleAccess = async (
 
 export const create = async (req: Request, res: Response) => {
   const { id_level, title, order } = req.body;
-  const orderNumber =
-    order || (await db.orderLevel.count({ where: { id_level } })) + 1;
+  const orderNumber = order || (await nextOrderLevel(id_level));
 
   const activity = await db.activity.create({
     data: {
@@ -39,7 +37,7 @@ export const create = async (req: Request, res: Response) => {
         create: { id_level, order: orderNumber },
       },
     },
-    select,
+    include,
   });
 
   res.status(201).json(activity);
@@ -49,23 +47,43 @@ export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
   const activity = await db.activity.findUniqueOrThrow({
     where: { id_assessment: id },
-    select,
+    include,
   });
   res.json(activity);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const activity = await db.activity.findMany({ where: req.query, select });
+  const { title, order, id_level } = req.query;
+  const filter = {
+    assessment: { title },
+    orderLevel: {
+      id_level,
+      order: order && Number(order),
+    },
+  };
+  const activity = await db.activity.findMany({ where: filter, include });
   res.json(activity);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id_assessment: id };
+  const { title, order, id_level } = req.body
 
   await db.activity.findUniqueOrThrow({ where });
 
-  const activity = await db.activity.update({ data: req.body, where, select });
+  const activity = await db.activity.update({
+    data: {
+      assessment: {
+        update: { title }
+      },
+      orderLevel: {
+        update: { order, id_level }
+      }
+    },
+    where,
+    include,
+  });
   res.status(203).json(activity);
 };
 
