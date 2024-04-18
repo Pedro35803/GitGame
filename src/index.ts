@@ -17,8 +17,9 @@ app.use(cors());
 app.use("/api/v1", routerAuth);
 app.use("/api/v1", routerGame);
 app.use("/api/v1", routerProgress);
+app.use("/images", express.static("uploads"));
 app.use(handleError);
 
 const port = PORT || 3000;
 
-app.listen(port, () => console.log(`Aplication running in port ${port}`));
+app.listen(port, () => console.log(`Application running in port ${port}`));

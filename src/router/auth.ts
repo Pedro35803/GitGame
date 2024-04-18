@@ -7,6 +7,7 @@ import * as player from "../controller/auth/player";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
+import { upload } from "../upload";
 
 export const router = express.Router();
 
@@ -18,6 +19,13 @@ router
   .get(authorization, user.getById)
   .patch(authorization, user.update)
   .delete(authorization, user.destroy);
+
+router.post(
+  "/user/me/picture",
+  authorization,
+  upload.single("picture"),
+  user.updateImage
+);
 
 router
   .route("/player")

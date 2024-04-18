@@ -5,6 +5,9 @@ declare global {
     export interface Request {
       userId: string
       privilegies: Privilegies;
+      file: {
+        filename: string
+      }
     }
  }
 }
