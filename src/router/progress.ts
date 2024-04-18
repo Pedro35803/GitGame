@@ -1,6 +1,7 @@
 import express from "express";
 
 import * as playerProgress from "../controller/progress/playerProgress";
+import * as capterProgress from "../controller/progress/capterProgress";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
@@ -26,3 +27,4 @@ const generateRoutersGame = (path, controller) => {
 };
 
 generateRoutersGame("/playerProgress", playerProgress);
+generateRoutersGame("/capterProgress", capterProgress);

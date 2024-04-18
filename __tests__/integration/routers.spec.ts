@@ -4,21 +4,27 @@ const routers = require("./routers.json");
 const dotenv = require("dotenv");
 dotenv.config();
 
+const { PrismaClient } = require("@prisma/client");
+const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+
+const db = new PrismaClient();
+
 const port = process.env.PORT || 3000;
 const baseURL = `http://localhost:${port}/api/v1`;
 
 const api = axios.create({ baseURL });
 
-const generateIdRandom = () => {
-  return Math.floor(Math.random() * 1000000);
+const generateEmail = () => {
+  return `${uuid()}@gmail.com`;
 };
 
-const handleValues = (data, id) => {
+const handleValues = (data, id, idPlayer) => {
   const list = Object.entries(data).map(([key, value]) => {
     if (value === "{{ID}}") return [key, id];
     else if (typeof value !== "string") return [key, value];
     const newValue = value.replace(/{{(.*?)}}/g, (match, content) => {
       return content
+        .replace("ID_PLAYER", idPlayer)
         .replace("ID", id)
         .replace(/D/g, () => Math.floor(Math.random(0, 9) * 10));
     });
@@ -27,53 +33,85 @@ const handleValues = (data, id) => {
   return Object.fromEntries(list);
 };
 
-const createData = async (router, data, id) => {
+const createData = async (table, data) => {
   try {
-    const newData = handleValues(data, id);
-    await api.post(router, newData);
-    return "OK";
-  } catch (error) {
-    if (error.response.status === 409) {
-      return "OK";
-    }
-  }
-  return null;
-};
-
-const deleteData = async (router, id) => {
-  try {
-    await api.delete(`${router}/${id}`);
-    return "OK";
-  } catch (error) {
-    if (error.response.status === 404) {
-      return "OK";
-    }
+    await db[table].create({ data });
+  } catch {
+    console.log("OK");
   }
 };
 
-const id = generateIdRandom();
+const deleteData = async (table, id) => {
+  try {
+    await db[table].delete({ where: { id } });
+  } catch {
+    console.log("OK");
+  }
+};
 
-describe.each(routers)(
+const populateData = async (routers, id, idPlayer) => {
+  await routers.forEach(async (obj) => {
+    const data = handleValues(obj.data, id, idPlayer);
+    console.log(obj.router);
+    await createData(obj.router, data);
+  });
+};
+
+const temp = [
+  {
+    router: "capter",
+    data: { title: "Rustic Cotton Tuna" },
+    update: { title: "Title update" },
+  },
+  {
+    router: "level",
+    data: {
+      id_capter: "{{ID}}",
+      title: "Rustic Rubber Gloves",
+    },
+    update: { title: "Title update" },
+    dependencies: ["capter"],
+  },
+];
+
+describe.each(temp)(
   "Tests for router: $router",
-  ({ router, data, update }) => {
+  ({ router, data, update, dependencies }) => {
+    const idPlayer = uuid();
+    const id = uuid();
+
     beforeAll(async () => {
-      const objUser = {
-        email: `${uuid()}@gmail.com`,
-        password: uuid(),
-        name: "tester",
+      await db.user.create({
+        data: {
+          id: idPlayer,
+          email: generateEmail(),
+          password: "secret",
+          Player: { create: {} },
+        },
+      });
+
+      const admin = {
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        second_password: ADMIN_PASSWORD,
       };
 
-      const register = await api.post("/register", objUser);
-      expect(register.status).toBe(201);
-
-      const response = await api.post("/login", objUser);
+      const response = await api.post("/login", admin);
       expect(response.data).toHaveProperty("token");
       expect(response.status).toBe(201);
+
+      const listRouters = temp
+        .filter((obj) => dependencies?.includes(obj.router))
+        .map((obj) => ({ ...obj, id }));
+
+      await populateData(listRouters, id, idPlayer);
 
       const { token } = response.data;
       const string = `Bearer ${token}`;
       api.defaults.headers.common.Authorization = string;
     });
+
+    const dataCreate = handleValues(data, id, idPlayer);
 
     it("Method get for list records", async () => {
       const response = await api.get(router);
@@ -82,22 +120,21 @@ describe.each(routers)(
     });
 
     it("Create a record successfully", async () => {
-      const newData = handleValues(data, id);
-      const response = await api.post(router, newData);
+      const response = await api.post(router, dataCreate);
 
       expect(response.status).toBe(201);
       expect(response.data).toBeInstanceOf(Object);
 
       Object.keys(data).forEach((key) => {
         expect(response.data).toHaveProperty(key);
-        expect(response.data[key]).toBe(newData[key]);
+        expect(response.data[key]).toBe(dataCreate[key]);
       });
     });
 
     describe("Tests for routers using id", () => {
       beforeEach(async () => {
         await deleteData(router, id);
-        await createData(router, data, id);
+        await createData(router, {...dataCreate, id});
       });
 
       it("Get one record successfully", async () => {
@@ -112,8 +149,8 @@ describe.each(routers)(
       });
 
       it("Update some record properties with successfully", async () => {
-        const newData = handleValues(update, id);
-        const response = await api.patch(`${router}/${id}`, newData);
+        const dataUpdate = handleValues(update, id, idPlayer);
+        const response = await api.patch(`${router}/${id}`, dataUpdate);
 
         expect(response.status).toBe(203);
         expect(response.data).toBeInstanceOf(Object);
@@ -125,7 +162,7 @@ describe.each(routers)(
       });
 
       it("Update all record properties with successfully", async () => {
-        const newData = handleValues({ ...data, ...update }, id);
+        const newData = handleValues({ ...data, ...update }, id, idPlayer);
         const response = await api.patch(`${router}/${id}`, newData);
 
         expect(response.status).toBe(203);
@@ -144,9 +181,10 @@ describe.each(routers)(
       });
 
       it("Try update record not exists", async () => {
-        const idRandom = generateIdRandom();
+        const updateData = handleValues(update, id, idPlayer);
+        const idRandom = uuid();
         try {
-          await api.patch(`${router}/${idRandom}`, update);
+          await api.patch(`${router}/${idRandom}`, updateData);
           throw new Error("Error common");
         } catch (error) {
           expect(error).toBeInstanceOf(axios.AxiosError);
@@ -155,7 +193,7 @@ describe.each(routers)(
       });
 
       it("Try get record not exists", async () => {
-        const idRandom = generateIdRandom();
+        const idRandom = uuid();
         try {
           await api.get(`${router}/${idRandom}`);
           throw new Error("Error common");
@@ -178,10 +216,6 @@ describe.each(routers)(
           expect(error.response.status).toBe(404);
         }
       });
-    });
-
-    afterAll(() => {
-      createData(router, data, id);
     });
   }
 );
