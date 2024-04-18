@@ -166,6 +166,7 @@ model PlayerProgress {
   CapterProgress CapterProgress[]
 
   @@index([id], map: "index_playerProgress")
+  @@unique([id_capter, id_player])
 }
 
 model CapterProgress {
@@ -180,6 +181,7 @@ model CapterProgress {
   LevelProgress LevelProgress[]
 
   @@index([id], map: "index_capterProgress")
+  @@unique([id_player_progress, id_level])
 }
 
 model LevelProgress {
@@ -192,4 +194,5 @@ model LevelProgress {
   orderLevel      OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@index([id], map: "index_levelProgress")
+  @@unique([id_orderLevel, id_capter_progress])
 }
