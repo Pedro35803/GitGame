@@ -14,9 +14,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/api/v1", routerAuth);
-app.use("/api/v1", routerGame);
-app.use("/api/v1", routerProgress);
+app.use(routerAuth);
+app.use(routerGame);
+app.use(routerProgress);
 app.use("/images", express.static("uploads"));
 app.use(handleError);
 
