@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { Capter, Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
+const include = { Level: true }
+
 export const handleAccess = async (
   req: Request,
   res: Response,
@@ -19,13 +21,13 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const capter = await db.capter.create({ data: req.body });
+  const capter = await db.capter.create({ data: req.body, include });
   res.status(201).json(capter);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const capter = await db.capter.findUniqueOrThrow({ where: { id } });
+  const capter = await db.capter.findUniqueOrThrow({ where: { id }, include });
   res.json(capter);
 };
 
@@ -35,7 +37,7 @@ export const getAll = async (req: Request, res: Response) => {
     ...req.query,
     numberOrder: numberOrder && Number(numberOrder),
   };
-  const capter = await db.capter.findMany({ where: filter });
+  const capter = await db.capter.findMany({ where: filter, include });
   res.json(capter);
 };
 
@@ -45,7 +47,7 @@ export const update = async (req: Request, res: Response) => {
 
   await db.capter.findUniqueOrThrow({ where });
 
-  const capter = await db.capter.update({ data: req.body, where });
+  const capter = await db.capter.update({ data: req.body, where, include });
   res.status(203).json(capter);
 };
 

@@ -3,8 +3,14 @@ version: "3"
 services:
   db:
     image: postgres
-    container_name: GitGame
+    container_name: DB_GitGame
     env_file:
       - .env
     ports:
       - 5432:5432
+  redis:
+    image: redis
+    container_name: Cache_GitGame
+    restart: always
+    ports:
+      - 6379:6379

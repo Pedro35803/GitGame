@@ -39,7 +39,7 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const playerProgress = await db.playerProgress.create({ data: req.body, include });
+  const playerProgress = await db.playerProgress.create({ data: req.body, includer });
   res.status(201).json(playerProgress);
 };
 

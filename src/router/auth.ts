@@ -7,12 +7,23 @@ import * as player from "../controller/auth/player";
 
 import authorization from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
+import {
+  changePassword,
+  generateCode,
+  verifyCode,
+  verifyKey,
+} from "../controller/auth/recoveryPassword";
 import { upload } from "../upload";
 
 export const router = express.Router();
 
 router.post("/register", auth.register);
 router.post("/login", auth.login);
+
+router.post("/send-email", generateCode);
+router.post("/key-exists", verifyKey);
+router.post("/verify-code", verifyCode);
+router.post("/change-password", changePassword);
 
 router
   .route("/user/me")
