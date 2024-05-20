@@ -14,6 +14,7 @@ export const db: PrismaClient = new PrismaClient();
       data: {
         email: ADMIN_EMAIL,
         password: passHash,
+        type: "logged"
       },
     });
     await db.admin.create({

@@ -52,7 +52,6 @@ const deleteData = async (table, id) => {
 const populateData = async (routers, id, idPlayer) => {
   await routers.forEach(async (obj) => {
     const data = handleValues(obj.data, id, idPlayer);
-    console.log(obj.router);
     await createData(obj.router, data);
   });
 };

@@ -11,10 +11,22 @@ export const register = async (req: Request, res: Response) => {
   const hashPassword = await bcrypt.hash(password, 10);
   const data: User = {
     ...req.body,
+    type: "logged",
     password: hashPassword,
   };
   const user: Partial<User> = await db.user.create({ data });
   res.status(201).json({ ...user, password: undefined });
+};
+
+export const registerAnonymous = async (req: Request, res: Response) => {
+  const user: Partial<User> = await db.user.create({
+    data: { type: "anonymous" },
+    select: { id: true, picture: true, type: true },
+  });
+  const token = jwt.sign({ sub: user.id, type: user.type }, JWT_SECRET, {
+    algorithm: "HS256",
+  });
+  res.status(201).json({ ...user, token });
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -30,7 +42,9 @@ export const login = async (req: Request, res: Response) => {
   const isPasswordEqual = await bcrypt.compare(password, user.password);
   if (!isPasswordEqual) throw objError;
 
-  const token = jwt.sign(user.id, JWT_SECRET, { algorithm: "HS256" });
+  const token = jwt.sign({ sub: user.id, type: user.type }, JWT_SECRET, {
+    algorithm: "HS256",
+  });
 
   if (user.Admin) {
     const { second_password } = req.body;

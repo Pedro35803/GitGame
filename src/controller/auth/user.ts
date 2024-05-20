@@ -6,7 +6,6 @@ const select = { id: true, email: true, name: true, picture: true };
 
 export const updateImage = async (req: Request, res: Response) => {
   const id = req.userId;
-  console.log("kndsaknd ");
   const { filename } = req.file;
   const picture = `/images/${filename}`;
   const user = await db.user.update({

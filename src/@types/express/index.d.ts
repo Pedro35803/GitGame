@@ -1,12 +1,13 @@
-import { Privilegies } from "@prisma/client";
+import { Privilegies, TypeUser } from "@prisma/client";
 
 declare global {
   namespace Express {
     export interface Request {
-      userId: string
+      userId: string;
+      typeUser: TypeUser;
       privilegies: Privilegies;
       file: {
-        filename: string
+        filename: string;
       }
     }
  }

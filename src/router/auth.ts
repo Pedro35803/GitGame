@@ -17,6 +17,7 @@ import { upload } from "../upload";
 
 export const router = express.Router();
 
+router.post("/register/anonymous", auth.registerAnonymous);
 router.post("/register", auth.register);
 router.post("/login", auth.login);
 

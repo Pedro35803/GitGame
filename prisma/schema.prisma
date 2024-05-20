@@ -7,12 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TypeUser {
+  anonymous
+  logged
+}
+
 model User {
-  id       String  @id(map: "pk_user") @default(uuid())
-  email    String  @unique @db.VarChar(255)
-  password String  @db.VarChar(255)
-  picture  String  @default("/images/commom.png")
-  name     String? @db.VarChar(50)
+  id       String   @id(map: "pk_user") @default(uuid())
+  email    String?  @unique @db.VarChar(255)
+  password String?  @db.VarChar(255)
+  name     String?  @db.VarChar(50)
+  picture  String   @default("/images/commom.png")
+  type     TypeUser
   Admin    Admin?
   Player   Player?
 
@@ -74,11 +80,11 @@ model Capter {
 }
 
 model Assessement {
-  id          String      @id(map: "pk_assessment") @default(uuid())
-  title       String      @db.VarChar(50)
-  objective   Objective[]
-  Exam        Exam[]
-  Activity    Activity[]
+  id        String      @id(map: "pk_assessment") @default(uuid())
+  title     String      @db.VarChar(50)
+  objective Objective[]
+  Exam      Exam[]
+  Activity  Activity[]
 }
 
 model Exam {
@@ -166,8 +172,8 @@ model PlayerProgress {
 
   CapterProgress CapterProgress[]
 
-  @@index([id], map: "index_playerProgress")
   @@unique([id_capter, id_player])
+  @@index([id], map: "index_playerProgress")
 }
 
 model CapterProgress {
@@ -181,8 +187,8 @@ model CapterProgress {
 
   LevelProgress LevelProgress[]
 
-  @@index([id], map: "index_capterProgress")
   @@unique([id_player_progress, id_level])
+  @@index([id], map: "index_capterProgress")
 }
 
 model LevelProgress {
@@ -194,6 +200,6 @@ model LevelProgress {
   capter_progress CapterProgress @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
   orderLevel      OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
-  @@index([id], map: "index_levelProgress")
   @@unique([id_orderLevel, id_capter_progress])
+  @@index([id], map: "index_levelProgress")
 }

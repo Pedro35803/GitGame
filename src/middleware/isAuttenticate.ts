@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../env";
+import { TypeUser } from "@prisma/client";
 
 export const authorization = async (
   req: Request,
@@ -18,7 +19,8 @@ export const authorization = async (
   const decoded = jwt.verify(token, JWT_SECRET);
   if (!decoded) throw { status: 401, message: "Unauthorized access" };
 
-  req.userId = decoded as string;
+  req.userId = decoded.sub as string;
+  req.type = decoded.type as TypeUser;
   next();
 };
 
