@@ -5,7 +5,7 @@ import * as user from "../controller/auth/user";
 import * as admin from "../controller/auth/admin";
 import * as player from "../controller/auth/player";
 
-import authorization from "../middleware/isAuttenticate";
+import { authorization } from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
 import {
   changePassword,
@@ -41,7 +41,6 @@ router.post(
 
 router
   .route("/player")
-  .post(player.create)
   .get(authorization, player.handleAccess, player.getAll);
 
 router

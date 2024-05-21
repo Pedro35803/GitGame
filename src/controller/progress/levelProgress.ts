@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const include = { orderLevel: true, capter_progress: true };
+const include = { orderLevel: true, capterProgress: true };
 
 export const handleAccess = async (
   req: Request,
@@ -21,27 +21,27 @@ export const handleAccess = async (
     where: { id },
     include: {
       ...include,
-      capter_progress: { include: { player_progress: true } },
+      capterProgress: { include: { playerProgress: true } },
     },
   });
 
-  if (userId === progress?.capter_progress.player_progress.id_player)
+  if (userId === progress?.capterProgress.playerProgress.id_user)
     return next();
   if (method === "POST") {
     const progressCapter = await db.capterProgress.findFirst({
-      where: { id: req.body?.id_capter_progress },
-      include: { player_progress: true },
+      where: { id: req.body?.id_capterProgress },
+      include: { playerProgress: true },
     });
-    if (progressCapter?.player_progress.id_player === userId) return next();
+    if (progressCapter?.playerProgress.id_user === userId) return next();
   }
 
   const admin = await db.admin.findUnique({
-    where: { id_user: userId },
-    select: { id_user: true, Privilegies: true },
+    where: { id_userLogged: userId },
+    select: { id_userLogged: true, privilegies: true },
   });
 
   if (!admin) throw objError;
-  const privilegies: Privilegies = admin.Privilegies;
+  const privilegies: Privilegies = admin.privilegies;
 
   if (!privilegies.canManageCRUDPlayer) throw objError;
 

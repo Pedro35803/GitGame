@@ -2,27 +2,48 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "../../db";
 
-const select = { id: true, email: true, name: true, picture: true };
+const include = {
+  userLogged: { select: { email: true, name: true } },
+  anonymous: true,
+};
+
+const objResponse = (user) => {
+  const type = !!user.anonymous ? "anonymous" : "logged";
+  return {
+    ...user,
+    ...user.userLogged,
+    userLogged: undefined,
+    anonymous: undefined,
+    type,
+  };
+};
 
 export const updateImage = async (req: Request, res: Response) => {
   const id = req.userId;
   const { filename } = req.file;
-  const picture = `/images/${filename}`;
+
+  const host = req.body.host || "";
+  const picture = `${host}/images/${filename}`;
+  
   const user = await db.user.update({
     where: { id },
     data: { picture },
-    select,
+    include,
   });
-  res.status(201).json(user);
+
+  const response = objResponse(user);
+  res.status(201).json(response);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const id = req.userId;
   const user = await db.user.findUniqueOrThrow({
     where: { id },
-    select,
+    include,
   });
-  res.json(user);
+
+  const response = objResponse(user);
+  res.json(response);
 };
 
 export const update = async (req: Request, res: Response) => {
@@ -37,8 +58,16 @@ export const update = async (req: Request, res: Response) => {
     password: password ? await bcrypt.hash(password, 10) : undefined,
   };
 
-  const user = await db.user.update({ data: update, where, select });
-  res.status(203).json(user);
+  const user = await db.user.update({
+    data: {
+      userLogged: { update: { data: { ...update }, where: { id_user: id } } },
+    },
+    include,
+    where,
+  });
+
+  const response = objResponse(user);
+  res.status(203).json(response);
 };
 
 export const destroy = async (req: Request, res: Response) => {

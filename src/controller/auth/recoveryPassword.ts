@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { User } from "@prisma/client";
+import { UserLogged } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 import { generateNumber } from "../../services/generateNumber";
@@ -11,9 +11,9 @@ const redisKeyCode = "code-recovery-password";
 const redisKeyChangePassword = "code-recovery-password";
 
 export const generateCode = async (req: Request, res: Response) => {
-  const { email } = req.body as Partial<User>;
-  const { id } = await db.user.findUnique({ where: { email } });
-  const hash = await bcrypt.hash(id, 10);
+  const { email } = req.body as Partial<UserLogged>;
+  const { id_user } = await db.userLogged.findUnique({ where: { email } });
+  const hash = await bcrypt.hash(id_user, 10);
 
   const code = generateNumber(6);
   await sendCodeEmail(email, code);
@@ -38,15 +38,15 @@ export const verifyCode = async (req: Request, res: Response) => {
   if (!jsonCode) throw { status: 404, message: "Key not exists" };
   if (jsonCode?.code != code) throw { status: 401, message: "Code incorrect" };
 
-  const { id } = await db.user.findUnique({
+  const { id_user } = await db.userLogged.findUnique({
     where: { email: jsonCode.email },
   });
 
   await redis.del(redisKey);
 
-  if (!id) throw { status: 410, message: "Recovery password cancel" };
+  if (!id_user) throw { status: 410, message: "Recovery password cancel" };
 
-  const hash = await bcrypt.hash(id, 10);
+  const hash = await bcrypt.hash(id_user, 10);
 
   await redis.set(
     `${redisKeyChangePassword}-${hash}`,
@@ -67,7 +67,7 @@ export const changePassword = async (req: Request, res: Response) => {
 
   if (!jsonCode) throw { message: "Key not exists" };
 
-  const user: User = await db.user.findUnique({
+  const user: UserLogged = await db.userLogged.findUnique({
     where: { email: jsonCode.email },
   });
 
@@ -77,9 +77,9 @@ export const changePassword = async (req: Request, res: Response) => {
   await redis.del(redisKey);
 
   const newPassword = await bcrypt.hash(password, 10);
-  await db.user.update({
+  await db.userLogged.update({
     data: { password: newPassword },
-    where: { id: user.id },
+    where: { id_user: user.id_user },
   });
 
   res.status(203).send("Update password whit success");
@@ -87,6 +87,7 @@ export const changePassword = async (req: Request, res: Response) => {
 
 export const verifyKey = async (req: Request, res: Response) => {
   const { key } = req.body;
+
   if (!key) throw { status: 404, message: "Require key params" };
 
   const dataCode = await redis.get(`${redisKeyCode}-${key}`);

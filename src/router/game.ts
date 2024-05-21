@@ -8,7 +8,7 @@ import * as capter from "../controller/game/capter";
 import * as level from "../controller/game/level";
 import * as exam from "../controller/game/exam";
 
-import authorization from "../middleware/isAuttenticate";
+import { authorization } from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
 
 export const router = express.Router();

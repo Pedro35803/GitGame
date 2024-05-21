@@ -7,41 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TypeUser {
-  anonymous
-  logged
-}
-
 model User {
-  id       String   @id(map: "pk_user") @default(uuid())
-  email    String?  @unique @db.VarChar(255)
-  password String?  @db.VarChar(255)
-  name     String?  @db.VarChar(50)
-  picture  String   @default("/images/commom.png")
-  type     TypeUser
-  Admin    Admin?
-  Player   Player?
+  id             String           @id(map: "pk_user") @default(uuid())
+  picture        String           @default("/images/commom.png")
+  anonymous      Anonymous?
+  userLogged     UserLogged?
+  reports        Reports[]
+  playerProgress PlayerProgress[]
 
   @@index([id], map: "index_user")
 }
 
-model Admin {
-  id_user         String       @id(map: "pk_admin")
-  second_password String       @db.VarChar(255)
-  user            User         @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
-  Privilegies     Privilegies?
+model Anonymous {
+  id_user String @id(map: "pk_anonymous")
+  user    User   @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
 
-  @@index([id_user], map: "index_admin")
+  @@index([id_user], map: "index_anonymous")
 }
 
-model Player {
-  id_user                  String           @id(map: "pk_player")
-  complete_game_percentage Int              @default(0)
-  user                     User             @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_player")
-  Reports                  Reports[]
-  PlayerProgress           PlayerProgress[]
+model UserLogged {
+  id_user  String  @id(map: "pk_userLogeed")
+  email    String  @unique @db.VarChar(255)
+  password String  @db.VarChar(255)
+  name     String? @db.VarChar(50)
+  user     User    @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
+  admin    Admin?
 
-  @@index([id_user], map: "index_player")
+  @@index([id_user], map: "index_userLogged")
+}
+
+model Admin {
+  id_userLogged   String       @id(map: "pk_admin")
+  second_password String       @db.VarChar(255)
+  userLogged      UserLogged   @relation(fields: [id_userLogged], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_admin")
+  privilegies     Privilegies?
+
+  @@index([id_userLogged], map: "index_admin")
 }
 
 model Privilegies {
@@ -55,15 +56,15 @@ model Privilegies {
   canManageCRUDReports    Boolean @default(true)
   canManageContentGame    Boolean @default(true)
   canReorderContentGame   Boolean @default(true)
-  admin                   Admin   @relation(fields: [id_admin], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_privilegies_admin")
+  admin                   Admin   @relation(fields: [id_admin], references: [id_userLogged], onDelete: Cascade, onUpdate: Cascade, map: "fk_privilegies_admin")
 }
 
 model Reports {
-  id        String  @id(map: "pk_report") @default(uuid())
-  id_player String
-  text      String
-  resolved  Boolean @default(false)
-  player    Player  @relation(fields: [id_player], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_report_player")
+  id       String  @id(map: "pk_report") @default(uuid())
+  id_user  String
+  text     String
+  resolved Boolean @default(false)
+  user     User    @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_report_player")
 
   @@index([id], map: "index_reports")
 }
@@ -72,9 +73,9 @@ model Capter {
   id             String           @id(map: "pk_capter") @default(uuid())
   title          String           @db.VarChar(50)
   numberOrder    Int              @unique @default(autoincrement())
-  PlayerProgress PlayerProgress[]
-  Exam           Exam?
-  Level          Level[]
+  playerProgress PlayerProgress[]
+  exam           Exam?
+  level          Level[]
 
   @@index([id], map: "index_capter")
 }
@@ -83,8 +84,8 @@ model Assessement {
   id        String      @id(map: "pk_assessment") @default(uuid())
   title     String      @db.VarChar(50)
   objective Objective[]
-  Exam      Exam[]
-  Activity  Activity[]
+  exam      Exam[]
+  activity  Activity[]
 }
 
 model Exam {
@@ -127,8 +128,8 @@ model Level {
 
   capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_level_capter")
 
-  CapterProgress CapterProgress[]
-  OrderLevel     OrderLevel[]
+  capterProgress CapterProgress[]
+  orderLevel     OrderLevel[]
 
   @@unique([id_capter, numberOrder])
   @@index([id], map: "index_level")
@@ -141,9 +142,9 @@ model OrderLevel {
 
   level Level @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_orderLevel_level")
 
-  LevelProgress LevelProgress[]
-  Activity      Activity[]
-  Subject       Subject[]
+  levelProgress LevelProgress[]
+  activity      Activity[]
+  subject       Subject[]
 
   @@unique([id_level, order])
   @@index([id, id_level], map: "index_orderLevel")
@@ -163,16 +164,16 @@ model Subject {
 model PlayerProgress {
   id            String  @id(map: "pk_playerProgress") @default(uuid())
   id_capter     String
-  id_player     String
+  id_user       String
   completed     Boolean @default(false)
   exam_complete Boolean @default(false)
 
   capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_capter")
-  player Player @relation(fields: [id_player], references: [id_user], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_player")
+  user   User   @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_user")
 
-  CapterProgress CapterProgress[]
+  capterProgress CapterProgress[]
 
-  @@unique([id_capter, id_player])
+  @@unique([id_capter, id_user])
   @@index([id], map: "index_playerProgress")
 }
 
@@ -182,10 +183,10 @@ model CapterProgress {
   id_level           String
   completed          Boolean @default(false)
 
-  player_progress PlayerProgress @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
-  level           Level          @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
+  playerProgress PlayerProgress @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
+  level          Level          @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
 
-  LevelProgress LevelProgress[]
+  levelProgress LevelProgress[]
 
   @@unique([id_player_progress, id_level])
   @@index([id], map: "index_capterProgress")
@@ -197,8 +198,8 @@ model LevelProgress {
   id_capter_progress String
   completed          Boolean @default(false)
 
-  capter_progress CapterProgress @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
-  orderLevel      OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
+  capterProgress CapterProgress @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
+  orderLevel     OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@unique([id_orderLevel, id_capter_progress])
   @@index([id], map: "index_levelProgress")

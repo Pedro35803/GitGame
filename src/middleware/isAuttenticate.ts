@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../env";
-import { TypeUser } from "@prisma/client";
+import { TypeUser } from "../@types/typeUser";
 
 export const authorization = async (
   req: Request,
@@ -23,5 +23,3 @@ export const authorization = async (
   req.type = decoded.type as TypeUser;
   next();
 };
-
-export default authorization;

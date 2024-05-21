@@ -8,28 +8,31 @@ export const db: PrismaClient = new PrismaClient();
 (async () => {
   await db.$connect();
   const listAdmin = await db.admin.findMany();
-  const passHash = await bcrypt.hash(ADMIN_PASSWORD, 10)
+  const passHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
   if (listAdmin.length <= 0) {
-    const user = await db.user.create({
+    await db.user.create({
       data: {
-        email: ADMIN_EMAIL,
-        password: passHash,
-        type: "logged"
-      },
-    });
-    await db.admin.create({
-      data: {
-        id_user: user.id,
-        second_password: passHash,
-        Privilegies: {
+        userLogged: {
           create: {
-            canEditPrivilegiesAdmin: true,
-            canManageContentGame: true,
-            canManageCRUDReports: true,
-            canManageCRUDPlayer: true,
-            canViewAllAdmin: true,
-            canCreateAdmin: true,
-            canDeleteAdmin: true,
+            email: ADMIN_EMAIL,
+            password: passHash,
+            admin: {
+              create: {
+                second_password: passHash,
+                privilegies: {
+                  create: {
+                    canEditPrivilegiesAdmin: true,
+                    canReorderContentGame: true,
+                    canManageContentGame: true,
+                    canManageCRUDReports: true,
+                    canManageCRUDPlayer: true,
+                    canViewAllAdmin: true,
+                    canCreateAdmin: true,
+                    canDeleteAdmin: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

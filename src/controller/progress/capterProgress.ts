@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const include = { level: true, player_progress: true };
+const include = { level: true, playerProgress: true };
 
 export const handleAccess = async (
   req: Request,
@@ -22,21 +22,21 @@ export const handleAccess = async (
     include,
   });
 
-  if (userId === progress?.player_progress.id_player) return next();
+  if (userId === progress?.playerProgress.id_user) return next();
   if (method === "POST") {
     const progressPlayer = await db.playerProgress.findFirst({
-      where: { id: req.body?.id_player_progress },
+      where: { id: req.body?.id_userProgress },
     });
-    if (progressPlayer.id_player === userId) return next();
+    if (progressPlayer.id_user === userId) return next();
   }
 
   const admin = await db.admin.findUnique({
-    where: { id_user: userId },
-    select: { id_user: true, Privilegies: true },
+    where: { id_userLogged: userId },
+    select: { id_userLogged: true, privilegies: true },
   });
 
   if (!admin) throw objError;
-  const privilegies: Privilegies = admin.Privilegies;
+  const privilegies: Privilegies = admin.privilegies;
 
   if (!privilegies.canManageCRUDPlayer) throw objError;
 

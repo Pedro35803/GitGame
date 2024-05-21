@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Capter, Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const include = { Level: true }
+const include = { level: true }
 
 export const handleAccess = async (
   req: Request,

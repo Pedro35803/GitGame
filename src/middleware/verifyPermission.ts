@@ -6,10 +6,10 @@ export const verifyPermission = async (
   res: Response,
   next: NextFunction
 ) => {
-  const id_user = req.userId;
+  const id_userLogged = req.userId;
   const user = await db.admin.findUnique({
-    where: { id_user },
-    select: { id_user: true, Privilegies: true },
+    where: { id_userLogged },
+    select: { id_userLogged: true, privilegies: true },
   });
 
   if (!user)
@@ -18,6 +18,6 @@ export const verifyPermission = async (
       message: "Router protect, necessity admin privileges",
     };
 
-  req.privilegies = user.Privilegies;
+  req.privilegies = user.privilegies;
   next();
 };

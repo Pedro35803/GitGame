@@ -1,17 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { db } from "../../db";
-import { Player, Privilegies, User } from "@prisma/client";
+import { Privilegies } from "@prisma/client";
+import bcrypt from "bcrypt";
 
-const select = {
-  id_user: true,
-  complete_game_percentage: true,
-  user: {
-    select: {
-      email: true,
-      name: true,
-    },
-  },
-};
+import { db } from "../../db";
+
+const select = { email: true, name: true, password: false, user: true };
 
 export const handleAccess = async (
   req: Request,
@@ -29,12 +22,12 @@ export const handleAccess = async (
   if (userId === id_user) return next();
 
   const admin = await db.admin.findUnique({
-    where: { id_user: userId },
-    select: { id_user: true, Privilegies: true },
+    where: { id_userLogged: userId },
+    include: { privilegies: true },
   });
 
   if (!admin) throw objError;
-  const privilegies: Privilegies = admin.Privilegies;
+  const privilegies: Privilegies = admin.privilegies;
 
   if (!privilegies.canManageCRUDPlayer) throw objError;
   if (method === "GET" && !id_user && !privilegies.canManageCRUDPlayer)
@@ -44,7 +37,7 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const user = await db.player.create({
+  const user = await db.userLogged.create({
     data: req.body,
     select,
   });
@@ -53,7 +46,7 @@ export const create = async (req: Request, res: Response) => {
 
 export const getById = async (req: Request, res: Response) => {
   const { id_user } = req.params;
-  const user = await db.player.findUniqueOrThrow({
+  const user = await db.userLogged.findUniqueOrThrow({
     where: { id_user },
     select,
   });
@@ -61,27 +54,28 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const { complete_game_percentage: percent } = req.query;
-  const filter: Partial<Player> = {
-    ...req.query,
-    complete_game_percentage: percent && Number(percent),
-  };
-  const user = await db.player.findMany({ select, where: filter });
+  const user = await db.userLogged.findMany({ where: req.query, select });
   res.json(user);
 };
 
 export const update = async (req: Request, res: Response) => {
+  const { password } = req.body;
   const { id_user } = req.params;
   const where = { id_user };
 
-  await db.player.findUniqueOrThrow({ where });
+  const update = {
+    ...req.body,
+    password: password ? await bcrypt.hash(password, 10) : undefined,
+  };
 
-  const user = await db.player.update({ data: req.body, where, select });
+  await db.userLogged.findUniqueOrThrow({ where });
+
+  const user = await db.userLogged.update({ data: update, where, select });
   res.status(203).json(user);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id_user } = req.params;
-  const user = await db.player.delete({ where: { id_user } });
+  const user = await db.user.delete({ where: { id: id_user } });
   res.status(204).json(user);
 };

@@ -1,4 +1,5 @@
-import { Privilegies, TypeUser } from "@prisma/client";
+import { Privilegies } from "@prisma/client";
+import { TypeUser } from "../typeUser";
 
 declare global {
   namespace Express {

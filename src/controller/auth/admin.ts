@@ -11,7 +11,7 @@ const select = {
       name: true,
     },
   },
-  Privilegies: true,
+  privilegies: true,
 };
 
 export const create = async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ export const create = async (req: Request, res: Response) => {
   const user = await db.admin.create({
     data: {
       ...create,
-      Privilegies: {
+      privilegies: {
         create: {},
       },
     },
@@ -56,14 +56,14 @@ export const getAll = async (req: Request, res: Response) => {
 
 export const getById = async (req: Request, res: Response) => {
   const privilegies: Privilegies = req.privilegies;
-  const { id_user } = req.params;
+  const { id_userLogged } = req.params;
   const userId = req.userId;
 
-  if (userId !== id_user && !privilegies.canViewAllAdmin)
+  if (userId !== id_userLogged && !privilegies.canViewAllAdmin)
     throw { status: 401, message: "Access denied. Protecting user privacy." };
 
   const user = await db.admin.findUniqueOrThrow({
-    where: { id_user },
+    where: { id_userLogged },
     select,
   });
 
@@ -72,11 +72,11 @@ export const getById = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
   const privilegies: Privilegies = req.privilegies;
-  const { id_user } = req.params;
+  const { id_userLogged } = req.params;
   const userId = req.userId;
-  const where = { id_user };
+  const where = { id_userLogged };
 
-  if (userId !== id_user && !privilegies.canEditPrivilegiesAdmin)
+  if (userId !== id_userLogged && !privilegies.canEditPrivilegiesAdmin)
     throw { status: 401, message: "Access denied. Protecting user privacy." };
 
   await db.admin.findUniqueOrThrow({ where });
@@ -95,7 +95,7 @@ export const update = async (req: Request, res: Response) => {
   const user = await db.admin.update({
     data: {
       ...update,
-      Privilegies: {
+      privilegies: {
         update: updatePrivilegies,
       },
     },
@@ -107,12 +107,12 @@ export const update = async (req: Request, res: Response) => {
 
 export const destroy = async (req: Request, res: Response) => {
   const privilegies: Privilegies = req.privilegies;
-  const { id_user } = req.params;
+  const { id_userLogged } = req.params;
   const userId = req.userId;
 
-  if (userId !== id_user && !privilegies.canDeleteAdmin)
+  if (userId !== id_userLogged && !privilegies.canDeleteAdmin)
     throw { status: 401, message: "Access denied. Insufficient privileges." };
 
-  const user = await db.admin.delete({ where: { id_user } });
+  const user = await db.admin.delete({ where: { id_userLogged } });
   res.status(204).json(user);
 };
