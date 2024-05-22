@@ -73,7 +73,7 @@ const temp = [
   },
 ];
 
-describe.each(temp)(
+describe.each(routers)(
   "Tests for router: $router",
   ({ router, data, update, dependencies }) => {
     const idPlayer = uuid();

@@ -1,0 +1,94 @@
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    {
+      title: 'Rustic Cotton Tuna',
+      id: 'bbd15671-b7b9-4e5d-b444-19646c7b4ce0'
+    }
+
+      at forEach (__tests__/integration/game/routers.spec.js:52:33)
+          at Array.forEach (<anonymous>)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+  console.log
+    OK
+
+      at deleteData (__tests__/integration/game/routers.spec.js:45:33)
+
+  console.log
+    OK
+
+      at createData (__tests__/integration/game/routers.spec.js:37:33)
+
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------|---------|----------|---------|---------|-------------------
+All files |       0 |        0 |       0 |       0 |                   
+----------|---------|----------|---------|---------|-------------------

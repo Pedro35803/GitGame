@@ -68,18 +68,18 @@ export const getAll = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id_assessment: id };
-  const { title, order, id_level } = req.body
+  const { title, order, id_level } = req.body;
 
   await db.activity.findUniqueOrThrow({ where });
 
   const activity = await db.activity.update({
     data: {
       assessment: {
-        update: { title }
+        update: { title },
       },
       orderLevel: {
-        update: { order, id_level }
-      }
+        update: { order, id_level },
+      },
     },
     where,
     include,
