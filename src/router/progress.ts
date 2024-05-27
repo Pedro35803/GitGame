@@ -1,8 +1,8 @@
 import express from "express";
 
-import * as playerProgress from "../controller/progress/playerProgress";
 import * as capterProgress from "../controller/progress/capterProgress";
 import * as levelProgress from "../controller/progress/levelProgress";
+import * as contentProgress from "../controller/progress/contentProgress";
 
 import { authorization } from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
@@ -27,6 +27,6 @@ const generateRoutersGame = (path, controller) => {
     .delete(authorization, controller.handleAccess, controller.destroy);
 };
 
-generateRoutersGame("/playerProgress", playerProgress);
-generateRoutersGame("/capterProgress", capterProgress);
-generateRoutersGame("/levelProgress", levelProgress);
+generateRoutersGame("/capter_progress", capterProgress);
+generateRoutersGame("/level_progress", levelProgress);
+generateRoutersGame("/content_progress",  contentProgress);

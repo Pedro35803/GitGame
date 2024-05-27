@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const include = { level: true, capterProgress: true };
+const include = { orderLevel: true, levelProgress: true };
 
 export const handleAccess = async (
   req: Request,
@@ -17,17 +17,25 @@ export const handleAccess = async (
     message: "Access denied. Protecting user privacy.",
   };
 
-  const progress = await db.levelProgress.findFirst({
+  const progress = await db.contentProgress.findFirst({
     where: { id },
-    include,
+    include: {
+      ...include,
+      levelProgress: { include: { capterProgress: true } },
+    },
   });
 
-  if (userId === progress?.capterProgress.id_user) return next();
+  const idUserCapter = progress?.levelProgress?.capterProgress?.id_user;
+
+  if (userId === idUserCapter) return next();
   if (method === "POST") {
-    const progressPlayer = await db.capterProgress.findFirst({
-      where: { id: req.body?.id_capter_progress },
+    const levelProgress = await db.levelProgress.findFirst({
+      where: { id: req.body?.id_level_progress },
+      include: { capterProgress: true },
     });
-    if (progressPlayer.id_user === userId) return next();
+    
+    const idUserLevel = levelProgress?.capterProgress?.id_user;
+    if (idUserLevel === userId) return next();
   }
 
   const admin = await db.admin.findUnique({
@@ -44,38 +52,40 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const levelProgress = await db.levelProgress.create({ data: req.body });
-  res.status(201).json(levelProgress);
+  const contentProgress = await db.contentProgress.create({ data: req.body });
+  res.status(201).json(contentProgress);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const levelProgress = await db.levelProgress.findUniqueOrThrow({
+  const contentProgress = await db.contentProgress.findUniqueOrThrow({
     where: { id },
   });
-  res.json(levelProgress);
+  res.json(contentProgress);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const levelProgress = await db.levelProgress.findMany({ where: req.query });
-  res.json(levelProgress);
+  const contentProgress = await db.contentProgress.findMany({
+    where: req.query,
+  });
+  res.json(contentProgress);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id };
 
-  await db.levelProgress.findUniqueOrThrow({ where });
+  await db.contentProgress.findUniqueOrThrow({ where });
 
-  const levelProgress = await db.levelProgress.update({
+  const contentProgress = await db.contentProgress.update({
     data: req.body,
     where,
   });
-  res.status(203).json(levelProgress);
+  res.status(203).json(contentProgress);
 };
 
 export const destroy = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const levelProgress = await db.levelProgress.delete({ where: { id } });
-  res.status(204).json(levelProgress);
+  const contentProgress = await db.contentProgress.delete({ where: { id } });
+  res.status(204).json(contentProgress);
 };

@@ -32,6 +32,11 @@ router
   .patch(authorization, user.update)
   .delete(authorization, user.destroy);
 
+router
+  .route("/user/me/progress")
+  .post(authorization, user.generateProgress)
+  .get(authorization, user.getProgress);
+
 router.post(
   "/user/me/picture",
   authorization,
@@ -39,9 +44,7 @@ router.post(
   user.updateImage
 );
 
-router
-  .route("/player")
-  .get(authorization, player.handleAccess, player.getAll);
+router.route("/player").get(authorization, player.handleAccess, player.getAll);
 
 router
   .route("/player/:id_user")

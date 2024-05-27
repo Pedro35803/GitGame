@@ -13,7 +13,7 @@ model User {
   anonymous      Anonymous?
   userLogged     UserLogged?
   reports        Reports[]
-  playerProgress PlayerProgress[]
+  capterProgress CapterProgress[]
 
   @@index([id], map: "index_user")
 }
@@ -72,10 +72,11 @@ model Reports {
 model Capter {
   id             String           @id(map: "pk_capter") @default(uuid())
   title          String           @db.VarChar(50)
+  titleGroup     String           @db.VarChar(50)
   numberOrder    Int              @unique @default(autoincrement())
-  playerProgress PlayerProgress[]
   exam           Exam?
   level          Level[]
+  capterProgress CapterProgress[]
 
   @@index([id], map: "index_capter")
 }
@@ -100,11 +101,11 @@ model Exam {
 }
 
 model Activity {
-  id_assessment String @id(map: "pk_activity")
-  id_orderLevel String
+  id_assessment  String @id(map: "pk_activity")
+  id_order_level String
 
   assessment Assessement @relation(fields: [id_assessment], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_activity_assessment")
-  orderLevel OrderLevel  @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
+  orderLevel OrderLevel  @relation(fields: [id_order_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@index([id_assessment], map: "index_activity")
 }
@@ -130,6 +131,7 @@ model Level {
 
   capterProgress CapterProgress[]
   orderLevel     OrderLevel[]
+  levelProgress  LevelProgress[]
 
   @@unique([id_capter, numberOrder])
   @@index([id], map: "index_level")
@@ -142,65 +144,65 @@ model OrderLevel {
 
   level Level @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_orderLevel_level")
 
-  levelProgress LevelProgress[]
-  activity      Activity[]
-  subject       Subject[]
+  contentProgress ContentProgress[]
+  activity        Activity[]
+  subject         Subject[]
 
   @@unique([id_level, order])
   @@index([id, id_level], map: "index_orderLevel")
 }
 
 model Subject {
-  id            String @id(map: "pk_subject") @default(uuid())
-  id_orderLevel String
-  title         String @db.VarChar(50)
-  text          String
+  id             String @id(map: "pk_subject") @default(uuid())
+  id_order_level String
+  title          String @db.VarChar(50)
+  text           String
 
-  orderLevel OrderLevel @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
+  orderLevel OrderLevel @relation(fields: [id_order_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
 
   @@index([id], map: "index_subject")
 }
 
-model PlayerProgress {
-  id            String  @id(map: "pk_playerProgress") @default(uuid())
+model CapterProgress {
+  id            String  @id(map: "pk_capterProgress") @default(uuid())
   id_capter     String
   id_user       String
   completed     Boolean @default(false)
   exam_complete Boolean @default(false)
 
-  capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_capter")
-  user   User   @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_playerProgress_user")
-
-  capterProgress CapterProgress[]
-
-  @@unique([id_capter, id_user])
-  @@index([id], map: "index_playerProgress")
-}
-
-model CapterProgress {
-  id                 String  @id(map: "pk_capterProgress") @default(uuid())
-  id_player_progress String
-  id_level           String
-  completed          Boolean @default(false)
-
-  playerProgress PlayerProgress @relation(fields: [id_player_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_playerProgress")
-  level          Level          @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_level")
-
+  capter        Capter          @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_capter")
+  user          User            @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_user")
+  Level         Level?          @relation(fields: [levelId], references: [id])
+  levelId       String?
   levelProgress LevelProgress[]
 
-  @@unique([id_player_progress, id_level])
+  @@unique([id_capter, id_user])
   @@index([id], map: "index_capterProgress")
 }
 
 model LevelProgress {
   id                 String  @id(map: "pk_levelProgress") @default(uuid())
-  id_orderLevel      String
   id_capter_progress String
+  id_level           String
   completed          Boolean @default(false)
 
-  capterProgress CapterProgress @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
-  orderLevel     OrderLevel     @relation(fields: [id_orderLevel], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_subject_orderLevel")
+  capterProgress  CapterProgress    @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
+  level           Level             @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_level")
+  contentProgress ContentProgress[]
 
-  @@unique([id_orderLevel, id_capter_progress])
+  @@unique([id_capter_progress, id_level])
   @@index([id], map: "index_levelProgress")
+}
+
+model ContentProgress {
+  id                 String  @id(map: "pk_contentProgress") @default(uuid())
+  id_order_level     String
+  id_level_progress String
+  completed          Boolean @default(false)
+
+  levelProgress LevelProgress @relation(fields: [id_level_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_contentProgress_levelProgress")
+  orderLevel    OrderLevel    @relation(fields: [id_order_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_contentProgress_orderLevel")
+
+  @@unique([id_order_level, id_level_progress])
+  @@index([id], map: "index_contentProgress")
 }

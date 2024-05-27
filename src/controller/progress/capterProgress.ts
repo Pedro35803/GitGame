@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const include = { level: true, playerProgress: true };
+const include = { user: true, capter: true };
 
 export const handleAccess = async (
   req: Request,
@@ -22,13 +22,8 @@ export const handleAccess = async (
     include,
   });
 
-  if (userId === progress?.playerProgress.id_user) return next();
-  if (method === "POST") {
-    const progressPlayer = await db.playerProgress.findFirst({
-      where: { id: req.body?.id_userProgress },
-    });
-    if (progressPlayer.id_user === userId) return next();
-  }
+  if (userId === progress?.user.id) return next();
+  if (method === "POST" && userId === req.body?.id_player) return next();
 
   const admin = await db.admin.findUnique({
     where: { id_userLogged: userId },
@@ -44,7 +39,7 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const capterProgress = await db.capterProgress.create({ data: req.body });
+  const capterProgress = await db.capterProgress.create({ data: req.body, include });
   res.status(201).json(capterProgress);
 };
 
@@ -52,12 +47,13 @@ export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
   const capterProgress = await db.capterProgress.findUniqueOrThrow({
     where: { id },
+    include
   });
   res.json(capterProgress);
 };
 
 export const getAll = async (req: Request, res: Response) => {
-  const capterProgress = await db.capterProgress.findMany({ where: req.query });
+  const capterProgress = await db.capterProgress.findMany({ where: req.query, include });
   res.json(capterProgress);
 };
 
@@ -70,6 +66,7 @@ export const update = async (req: Request, res: Response) => {
   const capterProgress = await db.capterProgress.update({
     data: req.body,
     where,
+    include
   });
   res.status(203).json(capterProgress);
 };
