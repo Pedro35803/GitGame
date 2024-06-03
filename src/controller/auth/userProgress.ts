@@ -1,16 +1,17 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { db } from "../../db";
 import { redis } from "../../redis";
 
-export const getProgress = async (req: Request, res: Response) => {
+export const getProgress = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const id = req.userId;
   const data = await redis.get(`progress-${id}`);
+  if (!data) next();
   const response = JSON.parse(data);
   res.json(response);
-};
-
-const calculatePercent = (listGame = [], listProgress = []) => {
-  return Math.floor((listProgress.length * 100) / listGame.length);
 };
 
 export const generateProgress = async (req: Request, res: Response) => {
@@ -96,5 +97,13 @@ export const generateProgress = async (req: Request, res: Response) => {
   }, 0);
 
   const completeGamePercentage = Math.floor(sumPercent / allCapter.length);
-  res.status(201).json({ completeGamePercentage, allCapterRemap });
+  const response = { completeGamePercentage, allCapterRemap };
+
+  const minutes = 5;
+  const secondsInMinute = 60;
+
+  await redis.set(`progress-${id}`, JSON.stringify(response), {
+    EX: minutes * secondsInMinute,
+  });
+  res.status(201).json(response);
 };

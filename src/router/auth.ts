@@ -36,7 +36,7 @@ router
 router
   .route("/user/me/progress")
   .post(authorization, progress.generateProgress)
-  .get(authorization, progress.getProgress);
+  .get(authorization, progress.getProgress, progress.generateProgress);
 
 router.post(
   "/user/me/picture",
