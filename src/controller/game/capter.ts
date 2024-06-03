@@ -2,10 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { Capter, Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
-const getInclude = (id_user: string) => ({
+const include = {
   level: true,
-  capterProgress: { where: { id_user } },
-});
+};
 
 export const handleAccess = async (
   req: Request,
@@ -24,16 +23,12 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const userId = req.userId;
-  const include = getInclude(userId);
   const capter = await db.capter.create({ data: req.body, include });
   res.status(201).json(capter);
 };
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.userId;
-  const include = getInclude(userId);
   const capter = await db.capter.findUniqueOrThrow({
     where: { id },
     include,
@@ -43,21 +38,35 @@ export const getById = async (req: Request, res: Response) => {
 
 export const getAll = async (req: Request, res: Response) => {
   const { numberOrder } = req.query;
-  const userId = req.userId;
-  const include = getInclude(userId);
   const filter: Partial<Capter> = {
     ...req.query,
     numberOrder: numberOrder && Number(numberOrder),
   };
-  const capter = await db.capter.findMany({ where: filter, include });
+  const responseDB = await db.capter.findMany({
+    where: filter,
+    include,
+    orderBy: { titleGroup: "asc" },
+  });
+  const listTitleGroup = responseDB.reduce((list, current) => {
+    const existsTitle = list.includes(current.titleGroup);
+    return !existsTitle ? [...list, current.titleGroup] : list;
+  }, []);
+
+  const capter = listTitleGroup.map((titleGroup) => {
+    const listCapter = responseDB.filter(
+      (capterObj) => capterObj.titleGroup == titleGroup
+    );
+    return {
+      titleGroup,
+      listCapter,
+    };
+  });
   res.json(capter);
 };
 
 export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
   const where = { id };
-  const userId = req.userId;
-  const include = getInclude(userId);
 
   await db.capter.findUniqueOrThrow({ where });
 
