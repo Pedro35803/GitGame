@@ -23,7 +23,7 @@ export const handleAccess = async (
   });
 
   if (userId === progress?.user.id) return next();
-  if (method === "POST" && userId === req.body?.id_player) return next();
+  if (method === "POST" && userId === req.body?.id_user) return next();
 
   const admin = await db.admin.findUnique({
     where: { id_userLogged: userId },

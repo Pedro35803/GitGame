@@ -4,6 +4,7 @@ import * as auth from "../controller/auth/auth";
 import * as user from "../controller/auth/user";
 import * as admin from "../controller/auth/admin";
 import * as player from "../controller/auth/player";
+import * as progress from "../controller/auth/userProgress";
 
 import { authorization } from "../middleware/isAuttenticate";
 import { verifyPermission } from "../middleware/verifyPermission";
@@ -34,8 +35,8 @@ router
 
 router
   .route("/user/me/progress")
-  .post(authorization, user.generateProgress)
-  .get(authorization, user.getProgress);
+  .post(authorization, progress.generateProgress)
+  .get(authorization, progress.getProgress);
 
 router.post(
   "/user/me/picture",
