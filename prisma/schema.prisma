@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id             String           @id(map: "pk_user") @default(uuid())
-  picture        String           @default("/images/commom.png")
+  picture        String           @default("/images/common.png")
   anonymous      Anonymous?
   userLogged     UserLogged?
   reports        Reports[]

@@ -56,7 +56,7 @@ export const login = async (req: Request, res: Response) => {
 
     if (!second_password) {
       throw {
-        status: 201,
+        status: 401,
         message: "For Admin login is necessary field second_password",
       };
     }

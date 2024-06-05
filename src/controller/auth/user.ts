@@ -22,8 +22,7 @@ export const updateImage = async (req: Request, res: Response) => {
   const id = req.userId;
   const { filename } = req.file;
 
-  const host = req.body.host || "";
-  const picture = `${host}/images/${filename}`;
+  const picture = `/images/${filename}`;
 
   const user = await db.user.update({
     where: { id },
