@@ -129,7 +129,6 @@ model Level {
 
   capter Capter @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_level_capter")
 
-  capterProgress CapterProgress[]
   orderLevel     OrderLevel[]
   levelProgress  LevelProgress[]
 
@@ -172,8 +171,6 @@ model CapterProgress {
 
   capter        Capter          @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_capter")
   user          User            @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_user")
-  Level         Level?          @relation(fields: [levelId], references: [id])
-  levelId       String?
   levelProgress LevelProgress[]
 
   @@unique([id_capter, id_user])
