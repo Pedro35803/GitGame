@@ -63,8 +63,6 @@ export const create = async (req: Request, res: Response) => {
     include: { level: { include: { capter: true } } },
   });
 
-  console.log(orderLevel);
-
   const { id_capter } = orderLevel.level;
 
   const contentProgress = await db.contentProgress.create({
