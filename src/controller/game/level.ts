@@ -25,7 +25,18 @@ export const create = async (req: Request, res: Response) => {
 
 export const getById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const level = await db.level.findUniqueOrThrow({ where: { id } });
+  const userId = req.userId;
+  const level = await db.level.findUniqueOrThrow({
+    where: { id },
+    include: {
+      capter: true,
+      orderLevel: { include: { activity: true, subject: true } },
+      levelProgress: {
+        include: { contentProgress: true },
+        where: { id_level: id, capterProgress: { id_user: userId } },
+      },
+    },
+  });
   res.json(level);
 };
 

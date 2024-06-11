@@ -9,7 +9,7 @@ export const getProgress = async (
 ) => {
   const id = req.userId;
   const data = await redis.get(`progress-${id}`);
-  if (!data) next();
+  if (!data) return next();
   const response = JSON.parse(data);
   res.json(response);
 };

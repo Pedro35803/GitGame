@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies } from "@prisma/client";
+import { CapterProgress, LevelProgress, Privilegies } from "@prisma/client";
 import { db } from "../../db";
 
 const include = { level: true, capterProgress: true };
@@ -27,7 +27,7 @@ export const handleAccess = async (
     const progressPlayer = await db.capterProgress.findFirst({
       where: { id: req.body?.id_capter_progress },
     });
-    if (progressPlayer.id_user === userId) return next();
+    if (!progressPlayer || progressPlayer.id_user === userId) return next();
   }
 
   const admin = await db.admin.findUnique({
@@ -44,7 +44,37 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const levelProgress = await db.levelProgress.create({ data: req.body });
+  const { id_capter_progress, id_level } = req.body;
+  const id_user = req.userId;
+
+  const level = await db.level.findUnique({
+    where: { id: id_level },
+    include: { capter: true },
+  });
+
+  const id_capter = level.capter.id;
+
+  const levelProgress = await db.levelProgress.create({
+    data: {
+      capterProgress: {
+        connectOrCreate: {
+          create: {
+            id_capter,
+            id_user,
+          },
+          where: {
+            id: id_capter_progress,
+          },
+        },
+      },
+      level: {
+        connect: {
+          id: id_level,
+        },
+      },
+    },
+  });
+
   res.status(201).json(levelProgress);
 };
 

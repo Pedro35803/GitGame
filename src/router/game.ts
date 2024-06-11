@@ -22,11 +22,11 @@ const generateRoutersGame = (path, controller) => {
       controller.handleAccess,
       controller.create
     )
-    .get(controller.getAll);
+    .get(authorization, controller.getAll);
 
   router
     .route(`${path}/:id`)
-    .get(controller.getById)
+    .get(authorization, controller.getById)
     .patch(
       authorization,
       verifyPermission,

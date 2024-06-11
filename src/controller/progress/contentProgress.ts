@@ -29,11 +29,14 @@ export const handleAccess = async (
 
   if (userId === idUserCapter) return next();
   if (method === "POST") {
-    const levelProgress = await db.levelProgress.findFirst({
-      where: { id: req.body?.id_level_progress },
+    const { id_level_progress } = req.body;
+    if (!id_level_progress) return next();
+
+    const levelProgress = await db.levelProgress.findUnique({
+      where: { id: id_level_progress },
       include: { capterProgress: true },
     });
-    
+
     const idUserLevel = levelProgress?.capterProgress?.id_user;
     if (idUserLevel === userId) return next();
   }
@@ -52,7 +55,46 @@ export const handleAccess = async (
 };
 
 export const create = async (req: Request, res: Response) => {
-  const contentProgress = await db.contentProgress.create({ data: req.body });
+  const { id_order_level, id_level_progress } = req.body;
+  const id_user = req.userId;
+
+  const orderLevel = await db.orderLevel.findUnique({
+    where: { id: id_order_level },
+    include: { level: { include: { capter: true } } },
+  });
+
+  console.log(orderLevel);
+
+  const { id_capter } = orderLevel.level;
+
+  const contentProgress = await db.contentProgress.create({
+    data: {
+      orderLevel: {
+        connect: { id: id_order_level },
+      },
+      levelProgress: {
+        connectOrCreate: {
+          create: {
+            level: {
+              connect: {
+                id: orderLevel.id_level,
+              },
+            },
+            capterProgress: {
+              connectOrCreate: {
+                create: { id_capter, id_user },
+                where: { id_capter_id_user: { id_capter, id_user } },
+              },
+            },
+          },
+          where: {
+            id: id_level_progress || "",
+          },
+        },
+      },
+    },
+  });
+
   res.status(201).json(contentProgress);
 };
 
