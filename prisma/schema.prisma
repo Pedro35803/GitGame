@@ -166,7 +166,6 @@ model CapterProgress {
   id            String         @id(map: "pk_capterProgress") @default(uuid())
   id_capter     String
   id_user       String
-  status        StatusProgress @default(TO_DO)
   exam_complete Boolean        @default(false)
 
   capter        Capter          @relation(fields: [id_capter], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_capterProgress_capter")
@@ -181,7 +180,6 @@ model LevelProgress {
   id                 String         @id(map: "pk_levelProgress") @default(uuid())
   id_capter_progress String
   id_level           String
-  status             StatusProgress @default(TO_DO)
 
   capterProgress  CapterProgress    @relation(fields: [id_capter_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_capterProgress")
   level           Level             @relation(fields: [id_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_levelProgress_level")
@@ -195,17 +193,11 @@ model ContentProgress {
   id                String         @id(map: "pk_contentProgress") @default(uuid())
   id_order_level    String
   id_level_progress String
-  status            StatusProgress @default(TO_DO)
+  complete          Boolean @default(false)
 
   levelProgress LevelProgress @relation(fields: [id_level_progress], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_contentProgress_levelProgress")
   orderLevel    OrderLevel    @relation(fields: [id_order_level], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_contentProgress_orderLevel")
 
   @@unique([id_order_level, id_level_progress])
   @@index([id], map: "index_contentProgress")
-}
-
-enum StatusProgress {
-  TO_DO
-  IN_PROGRESS
-  COMPLETED
 }

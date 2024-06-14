@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_SECRET } from "../env";
-import { TypeUser } from "../@types/typeUser";
+import { TypeUser } from "../@types/enums";
 
 export const authorization = async (
   req: Request,

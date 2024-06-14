@@ -14,11 +14,22 @@ export const getProgress = async (
   res.json(response);
 };
 
+enum StatusProgress {
+  TO_DO = "TO_DO",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+}
+
+const statusObj = {
+  0: StatusProgress.TO_DO,
+  100: StatusProgress.COMPLETED,
+};
+
 export const generateProgress = async (req: Request, res: Response) => {
   const id = req.userId;
 
   const allCapter = await db.capter.findMany({
-    include: { capterProgress: { where: { id_user: id } } },
+    include: { capterProgress: { where: { id_user: id } }, level: true },
   });
 
   const allProgress = await db.user.findUnique({
@@ -45,18 +56,17 @@ export const generateProgress = async (req: Request, res: Response) => {
     },
   });
 
-  const percentStatus = {
-    TO_DO: 0,
-    COMPLETED: 100,
-  };
+  const listCapterProgress = allProgress?.capterProgress || [];
 
-  const allCapterRemap = allProgress.capterProgress.map((capter) => {
-    const newLevelProgress = capter.levelProgress
+  const allCapterRemap = listCapterProgress.map((capterProgress) => {
+    const newLevelProgress = capterProgress.levelProgress
       .map((levelProgress) => {
-        const valueCountContent = levelProgress.contentProgress.reduce(
+        const contentProgress = levelProgress?.contentProgress || [];
+
+        const valueCountContent = contentProgress.reduce(
           (acumulator, current) => {
-            const contentStatus = { ...percentStatus, IN_PROGRESS: 50 };
-            return contentStatus[current.status] / 100 + acumulator;
+            const valueActual = current.complete ? 1 : 0;
+            return valueActual + acumulator;
           },
           0
         );
@@ -64,39 +74,44 @@ export const generateProgress = async (req: Request, res: Response) => {
         const sizeContentLevel = levelProgress.level.orderLevel?.length;
         const percentLevel = ((valueCountContent * 100) / sizeContentLevel) | 0;
 
-        const response = { percentLevel, ...levelProgress };
+        const response = {
+          percentLevel,
+          ...levelProgress,
+          status: statusObj[percentLevel] || StatusProgress.IN_PROGRESS,
+        };
         return response;
       })
       .flat();
 
-    const percentCapter = newLevelProgress.reduce((acumulator, current) => {
-      const percent = percentStatus[current.status] || current.percentLevel;
+    const sumLevelPercent = newLevelProgress.reduce((acumulator, current) => {
+      const percent = current.percentLevel;
       return percent + acumulator;
     }, 0);
+
+    const capterFind = allCapter?.find(
+      (capter) => capter.id === capterProgress.id_capter
+    );
+
+    const countCapter = capterFind?.level?.length;
+    const percentCapter = Math.floor(sumLevelPercent / countCapter);
 
     return {
       percentCapter,
       capterProgress: {
-        ...capter,
+        ...capterProgress,
         levelProgress: newLevelProgress,
+        status: statusObj[percentCapter] || StatusProgress.IN_PROGRESS,
         user: undefined,
       },
     };
   });
 
-  const sumPercent = allCapter.reduce((acumulator, capterCurrent) => {
-    const { status } = capterCurrent?.capterProgress[0] || {};
-
-    const currentProgress = allCapterRemap.find(
-      (capter) =>
-        capter.capterProgress.id === capterCurrent.capterProgress[0]?.id
-    );
-
-    const percent = percentStatus[status] | currentProgress?.percentCapter;
+  const sumPercent = allCapterRemap.reduce((acumulator, capterCurrent) => {
+    const percent = capterCurrent?.percentCapter;
     return percent + acumulator;
   }, 0);
 
-  const completeGamePercentage = Math.floor(sumPercent / allCapter.length);
+  const completeGamePercentage = Math.floor(sumPercent / allCapter.length) | 0;
   const response = { completeGamePercentage, allCapterRemap };
 
   const minutes = 5;
@@ -105,5 +120,6 @@ export const generateProgress = async (req: Request, res: Response) => {
   await redis.set(`progress-${id}`, JSON.stringify(response), {
     EX: minutes * secondsInMinute,
   });
+
   res.status(201).json(response);
 };

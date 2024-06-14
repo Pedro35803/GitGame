@@ -51,23 +51,5 @@ export const login = async (req: Request, res: Response) => {
     }
   );
 
-  if (userLogged.admin) {
-    const { second_password } = req.body;
-
-    if (!second_password) {
-      throw {
-        status: 401,
-        message: "For Admin login is necessary field second_password",
-      };
-    }
-
-    const isSecondPassEqual = await bcrypt.compare(
-      second_password,
-      userLogged.admin.second_password
-    );
-
-    if (!isSecondPassEqual) throw objError;
-  }
-
   res.status(201).json({ token });
 };

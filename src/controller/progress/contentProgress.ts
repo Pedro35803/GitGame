@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { Privilegies } from "@prisma/client";
+import { Privilegies, ContentProgressWhereInput } from "@prisma/client";
 import { db } from "../../db";
+import { unauthorizedError } from "../../services/objError";
 
 const include = { orderLevel: true, levelProgress: true };
 
-export const handleAccess = async (
+export const handleAccessUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -12,10 +13,7 @@ export const handleAccess = async (
   const { id } = req.params;
   const { userId, method } = req;
 
-  const objError = {
-    status: 401,
-    message: "Access denied. Protecting user privacy.",
-  };
+  if (req.adminAccess) return next();
 
   const progress = await db.contentProgress.findFirst({
     where: { id },
@@ -41,21 +39,32 @@ export const handleAccess = async (
     if (idUserLevel === userId) return next();
   }
 
+  throw unauthorizedError;
+};
+
+export const handleAccessAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req;
+
   const admin = await db.admin.findUnique({
     where: { id_userLogged: userId },
     select: { id_userLogged: true, privilegies: true },
   });
 
-  if (!admin) throw objError;
+  if (!admin) {return next()};
   const privilegies: Privilegies = admin.privilegies;
 
-  if (!privilegies.canManageCRUDPlayer) throw objError;
+  if (!privilegies.canManageCRUDPlayer) throw unauthorizedError;
 
+  req.adminAccess = true;
   next();
 };
 
 export const create = async (req: Request, res: Response) => {
-  const { id_order_level, id_level_progress } = req.body;
+  const { id, id_order_level, id_level_progress, complete } = req.body;
   const id_user = req.userId;
 
   const orderLevel = await db.orderLevel.findUnique({
@@ -67,6 +76,8 @@ export const create = async (req: Request, res: Response) => {
 
   const contentProgress = await db.contentProgress.create({
     data: {
+      id,
+      complete,
       orderLevel: {
         connect: { id: id_order_level },
       },
@@ -105,10 +116,44 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 export const getAll = async (req: Request, res: Response) => {
+  const { id_user } = req.query;
+
+  const objFilterUser = id_user
+    ? { levelProgress: { capterProgress: { id_user } } }
+    : {};
+
+  const filter: Partial<ContentProgressWhereInput> = {
+    ...req.query,
+    ...objFilterUser,
+    id_user: undefined,
+  };
+
   const contentProgress = await db.contentProgress.findMany({
-    where: req.query,
+    where: filter,
   });
+
   res.json(contentProgress);
+};
+
+export const getAllUser = async (req: Request, res: Response) => {
+  const limit = Number(req.query.limit);
+  const { userId } = req;
+
+  const filter = {
+    levelProgress: { capterProgress: { id_user: userId } },
+    ...req.query,
+    limit: undefined,
+  };
+
+  const contentProgress = await db.contentProgress.findMany({
+    where: filter,
+    include,
+    take: limit || 1000,
+  });
+
+  const response = limit == 1 ? contentProgress[0] : contentProgress;
+
+  res.json(response);
 };
 
 export const update = async (req: Request, res: Response) => {
