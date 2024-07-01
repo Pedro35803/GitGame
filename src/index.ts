@@ -9,7 +9,7 @@ import { router as routerAuth } from "./router/auth";
 import { router as routerGame } from "./router/game";
 import { router as routerProgress } from "./router/progress";
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 app.use(cors());
